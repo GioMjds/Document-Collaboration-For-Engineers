@@ -1,9 +1,48 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# AGENTS.md
 
-# This is NOT the Next.js you know
+> Read this file first, every session, before writing code.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+## General Principles
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+- Generate concise, short solutions for new modules or code.
+- Watch for over-engineering, oversized files needing refactor.
+- Watch for weird syntax/style mismatching rest of codebase.
+- Watch for obvious bugs.
+- Prioritize concise, precise code and docs changes.
+- No emojis or special characters in comments.
+- Write `activity-log.md` in `/docs` to refer back if confused.
+- Make to-do list, run major changes by user first.
+- Review existing files before refactor or change.
+- Markdown files use kebab naming (e.g., `my-file.md`).
+- Don't auto-commit activity logs and docs.
+- Comments: one-liner, one sentence.
 
-<!-- END:nextjs-agent-rules -->
+## Code Quality
+
+- Right data structures and algorithms for problem.
+- Don't expose data needlessly (least priviledge).
+- No external libraries unless aboslutely necessary.
+- Use project dependency file for correct versions.
+- Avoid redundancy unless improves usability.
+
+## When Unsure
+
+- Ambiguous requirement -> state your assumption, proceed.
+- About to touch auth, payments, or run a schema migration -> pause and confirm with the human first.
+
+## Version Control
+
+- Commit after significant changes, clear messages.
+- Keep commits focused, atomic.
+- No auto-push any branch.
+
+## AI Restrictions
+
+- No customer personal data - names, contacts, account numbers, etc.
+- No credentials - passwords, API keys, tokens, connection strings, etc.
+
+## Design Context
+
+- Product Register: `product` (essential utility, workflows, and task completion).
+- Creative North Star: "The Civic Aqueduct" (clean, calm, dependable public utility).
+- Primary Docs: Reference [PRODUCT.md](file:///D:/giomj/Projects/refillr/PRODUCT.md) for strategy and users; reference [DESIGN.md](file:///D:/giomj/Projects/refillr/DESIGN.md) for visual tokens and components.

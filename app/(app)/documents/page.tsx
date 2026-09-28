@@ -2,6 +2,8 @@ import { requireUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { UploadForm } from './upload-form';
 import { DownloadButton } from './download-button';
+import { ArchiveButton } from './archive-button';
+
 import { StatusBadge } from '@/components/status-badge';
 import {
   Table,
@@ -23,6 +25,8 @@ function formatSize(bytes: number | null) {
 export default async function DocumentsPage() {
   const user = await requireUser();
   const supabase = await createClient();
+
+  const isDC = user.role === 'doc_controller';
 
   // RLS filters this automatically per role
   const { data: documents } = await supabase
@@ -77,6 +81,12 @@ export default async function DocumentsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <DownloadButton documentId={d.id} />
+                    {isDC && (
+                      <ArchiveButton
+                        documentId={d.id}
+                        docNumber={d.doc_number}
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               ))

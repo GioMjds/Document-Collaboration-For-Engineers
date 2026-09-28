@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { requireUser } from '@/lib/auth';
+import { requireUser, requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import {
   documentMetaSchema,
@@ -128,4 +128,78 @@ export async function docNumberExists(docNumber: string): Promise<boolean> {
     p_doc_number: docNumber,
   });
   return !!data;
+}
+
+export async function archiveDocument(documentId: string): Promise<
+  | {
+      ok: true;
+    }
+  | {
+      ok: false;
+      error: string;
+    }
+> {
+  const user = await requireRole(['doc_controller']);
+  const supabase = await createClient();
+
+  const { data: doc } = await supabase
+    .from('documents')
+    .select('id, status')
+    .eq('id', documentId)
+    .single();
+
+  if (!doc) return { ok: false, error: 'Document not found.' };
+  if (doc.status === 'archived')
+    return { ok: false, error: 'Document is already archived.' };
+
+  const { error } = await supabase
+    .from('documents')
+    .update({
+      status: 'archived',
+      status_before_archive: doc.status,
+      archived_at: new Date().toISOString(),
+      archived_by: user.id,
+    })
+    .eq('id', documentId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/documents');
+  revalidatePath('/archive');
+  revalidatePath('/review');
+  return { ok: true };
+}
+
+export async function restoreDocument(
+  documentId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireRole(['doc_controller']);
+  const supabase = await createClient();
+
+  const { data: doc } = await supabase
+    .from('documents')
+    .select('id, status, status_before_archive')
+    .eq('id', documentId)
+    .single();
+
+  if (!doc) return { ok: false, error: 'Document not found.' };
+  if (doc.status !== 'archived')
+    return { ok: false, error: 'Document is not archived.' };
+
+  const { error } = await supabase
+    .from('documents')
+    .update({
+      status: doc.status_before_archive ?? 'submitted',
+      status_before_archive: null,
+      archived_at: null,
+      archived_by: null,
+    })
+    .eq('id', documentId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/documents');
+  revalidatePath('/archive');
+  revalidatePath('/review');
+  return { ok: true };
 }

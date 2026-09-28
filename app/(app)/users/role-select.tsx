@@ -1,0 +1,67 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { updateUserRole } from './actions';
+
+type Role = 'engineer' | 'manager' | 'doc_controller';
+
+const LABELS = {
+  engineer: 'Engineer',
+  manager: 'Manager',
+  doc_controller: 'Document Controller',
+} satisfies Record<Role, string>;
+
+export function RoleSelect({
+  userId,
+  currentRole,
+  isSelf,
+}: {
+  userId: string;
+  currentRole: Role;
+  isSelf: boolean;
+}) {
+  const [value, setValue] = useState<Role>(currentRole);
+  const [pending, startTransition] = useTransition();
+
+  function onChange(next: Role) {
+    const previous = value;
+    setValue(next); // optimistic
+
+    startTransition(async () => {
+      const result = await updateUserRole({ user_id: userId, role: next });
+      if (!result.ok) {
+        setValue(previous); // roll back
+        toast.error(result.error);
+        return;
+      }
+      toast.success('Role updated.');
+    });
+  }
+
+  return (
+    <Select
+      value={value}
+      onValueChange={(v) => onChange(v as Role)}
+      disabled={pending || isSelf}
+    >
+      <SelectTrigger className="w-48">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {(Object.keys(LABELS) as Role[]).map((r) => (
+          <SelectItem key={r} value={r}>
+            {LABELS[r]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}

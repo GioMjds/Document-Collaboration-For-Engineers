@@ -52,9 +52,7 @@ export function ReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button size="sm">Review</Button>
-      </DialogTrigger>
+      <DialogTrigger render={<Button size="sm">Review</Button>} />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Review {docNumber}</DialogTitle>

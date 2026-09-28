@@ -15,6 +15,7 @@ async function signOut() {
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   const user = await requireUser();
   const canReview = user.role === 'manager' || user.role === 'doc_controller';
+  const isDC = user.role === 'doc_controller';
 
   return (
     <div className="min-h-screen">
@@ -23,6 +24,8 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           <Link href="/documents" className="font-medium">
             Documents
           </Link>
+          {isDC && <Link href="/users">Users</Link>}
+          {isDC && <Link href="/archive">Archive</Link>}
           {canReview && <Link href="/review">Review queue</Link>}
         </nav>
         <div className="flex items-center gap-3">

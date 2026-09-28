@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       documents: {
         Row: {
+          archived_at: string | null
+          archived_by: string | null
           created_at: string
           description: string | null
           doc_number: string
@@ -25,11 +27,16 @@ export type Database = {
           id: string
           mime_type: string | null
           status: Database["public"]["Enums"]["doc_status"]
+          status_before_archive:
+            | Database["public"]["Enums"]["doc_status"]
+            | null
           title: string
           updated_at: string
           uploaded_by: string
         }
         Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
           created_at?: string
           description?: string | null
           doc_number: string
@@ -39,11 +46,16 @@ export type Database = {
           id?: string
           mime_type?: string | null
           status?: Database["public"]["Enums"]["doc_status"]
+          status_before_archive?:
+            | Database["public"]["Enums"]["doc_status"]
+            | null
           title: string
           updated_at?: string
           uploaded_by: string
         }
         Update: {
+          archived_at?: string | null
+          archived_by?: string | null
           created_at?: string
           description?: string | null
           doc_number?: string
@@ -53,11 +65,21 @@ export type Database = {
           id?: string
           mime_type?: string | null
           status?: Database["public"]["Enums"]["doc_status"]
+          status_before_archive?:
+            | Database["public"]["Enums"]["doc_status"]
+            | null
           title?: string
           updated_at?: string
           uploaded_by?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_uploaded_by_fkey"
             columns: ["uploaded_by"]
@@ -70,18 +92,21 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           full_name: string
           id: string
           role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
           created_at?: string
+          email?: string | null
           full_name?: string
           id: string
           role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
           created_at?: string
+          email?: string | null
           full_name?: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]

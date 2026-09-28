@@ -58,18 +58,18 @@ export default async function DocumentsPage() {
                     {d.doc_number}
                   </TableCell>
                   <TableCell>{d.title}</TableCell>
-                  {d.status === 'rejected' && d.reviews?.length > 0 && (
-                    <div className="mt-1 text-xs text-red-700">
-                      Reason:{' '}
-                      {
-                        [...d.reviews].sort((a, b) =>
-                          b.created_at.localeCompare(a.created_at),
-                        )[0].comment
-                      }
-                    </div>
-                  )}
                   <TableCell>
                     <StatusBadge status={d.status} />
+                    {d.status === 'rejected' && d.reviews?.length > 0 && (
+                      <div className="mt-1 text-xs text-red-700">
+                        Reason:{' '}
+                        {
+                          [...d.reviews].sort((a, b) =>
+                            b.created_at.localeCompare(a.created_at),
+                          )[0].comment
+                        }
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>{formatSize(d.file_size)}</TableCell>
                   <TableCell>

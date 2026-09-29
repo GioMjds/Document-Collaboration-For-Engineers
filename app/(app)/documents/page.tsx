@@ -1,9 +1,9 @@
+import type { Metadata } from 'next';
 import { requireUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { UploadForm } from './upload-form';
 import { DownloadButton } from './download-button';
 import { ArchiveButton } from './archive-button';
-
 import { StatusBadge } from '@/components/status-badge';
 import {
   Table,
@@ -13,13 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatSize } from '@/utils/formatters';
 
-function formatSize(bytes: number | null) {
-  if (!bytes) return '-';
-  const mb = bytes / (1024 * 1024);
-  return mb >= 1
-    ? `${mb.toFixed(1)} MB`
-    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+export const metadata: Metadata = {
+  title: 'Documents',
+  description: 'Manage and track engineering documents',
 }
 
 export default async function DocumentsPage() {

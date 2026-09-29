@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-29T16:54:25.000Z",
+  "title": "Design System: Engineering Document Control & Authority NOC Tracker",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Command Slate",
+        "canonical": "oklch(0.205 0 0)",
+        "tonalRamp": [
+          "#09090b",
+          "#18181b",
+          "#27272a",
+          "#3f3f46",
+          "#52525b",
+          "#71717a",
+          "#a1a1aa",
+          "#e4e4e7"
+        ]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Base Canvas",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": [
+          "#ffffff",
+          "#fafafa",
+          "#f4f4f5",
+          "#e4e4e7",
+          "#d4d4d8",
+          "#a1a1aa",
+          "#71717a",
+          "#18181b"
+        ]
+      },
+      "status-success": {
+        "role": "semantic",
+        "displayName": "Approved Green",
+        "canonical": "oklch(0.45 0.15 145)",
+        "tonalRamp": [
+          "#052e16",
+          "#14532d",
+          "#166534",
+          "#15803d",
+          "#22c55e",
+          "#86efac",
+          "#bbf7d0",
+          "#dcfce7"
+        ]
+      },
+      "status-warning": {
+        "role": "semantic",
+        "displayName": "Pending Amber",
+        "canonical": "oklch(0.55 0.16 55)",
+        "tonalRamp": [
+          "#431407",
+          "#7c2d12",
+          "#9a3412",
+          "#c2410c",
+          "#f97316",
+          "#fdba74",
+          "#fed7aa",
+          "#ffedd5"
+        ]
+      },
+      "status-danger": {
+        "role": "semantic",
+        "displayName": "Expired Crimson",
+        "canonical": "oklch(0.577 0.245 27.325)",
+        "tonalRamp": [
+          "#450a0a",
+          "#7f1d1d",
+          "#991b1b",
+          "#b91c1c",
+          "#ef4444",
+          "#fca5a5",
+          "#fecaca",
+          "#fee2e2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Top-level dashboard summary headings and module titles."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles, project detail headers, and modal dialog titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Table group headers, card titles, and drawer headers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Main data table cells, submittal notes, review comments, and description text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form field labels, table column headers, status badges, and metadata tags."
+      }
+    },
+    "shadows": [
+      {
+        "name": "modal-overlay",
+        "value": "0 4px 12px -2px rgba(0, 0, 0, 0.08)",
+        "purpose": "Tight ambient separation for floating dialogs and select popovers over dense data tables."
+      }
+    ],
+    "motion": [
+      {
+        "name": "instant-transition",
+        "value": "150ms ease-out",
+        "purpose": "Snappy state transitions for tabs, dialogs, and button hovers."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "High-priority actions such as Submit Submittal, Approve Drawing, or Save Project.",
+      "html": "<button class=\"ds-btn-primary\">Approve Submittal</button>",
+      "css": ".ds-btn-primary { background: #18181b; color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: background 0.15s ease-out; } .ds-btn-primary:hover { background: #09090b; } .ds-btn-primary:focus-visible { outline: 2px solid #71717a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary actions like Filter, Export, or Cancel.",
+      "html": "<button class=\"ds-btn-secondary\">Export Masterlog</button>",
+      "css": ".ds-btn-secondary { background: #ffffff; color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 6px; border: 1px solid #e4e4e7; cursor: pointer; transition: background 0.15s ease-out; } .ds-btn-secondary:hover { background: #f4f4f5; }"
+    },
+    {
+      "name": "Status Badge Approved",
+      "kind": "chip",
+      "refersTo": "badge-approved",
+      "description": "Authority NOC approved status badge.",
+      "html": "<span class=\"ds-badge-approved\">Approved</span>",
+      "css": ".ds-badge-approved { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }"
+    },
+    {
+      "name": "Status Badge Expired",
+      "kind": "chip",
+      "refersTo": "badge-expired",
+      "description": "Permit or NOC expired status badge requiring immediate revalidation.",
+      "html": "<span class=\"ds-badge-expired\">Expired</span>",
+      "css": ".ds-badge-expired { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Standard form text input for reference numbers, project names, and dates.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Enter Authority Ref #...\" />",
+      "css": ".ds-input { background: #ffffff; color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; padding: 8px 12px; border-radius: 6px; border: 1px solid #e4e4e7; width: 100%; box-sizing: border-box; } .ds-input:focus-visible { outline: 2px solid #18181b; outline-offset: 1px; border-color: #18181b; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Engineering Command Deck",
+    "overview": "The Engineering Command Deck is a utilitarian, high-density operational surface built for engineers, document controllers, and managers managing complex multi-authority construction approvals across Dubai. Every screen prioritizes legibility, state immediacy, and rigorous data structure over ornamentation.",
+    "keyCharacteristics": [
+      "High-Density Utility: Compact data grids and tabular layouts presenting deep metadata without horizontal scrolling waste.",
+      "Strict Structural Boundaries: 1px hairline borders define panels and grid cells instead of floating drop shadows.",
+      "Immediate Status Visibility: Authority NOC states communicate urgency with high-contrast badge tokens.",
+      "Fast, Predictable Motion: Transitions are instant or capped at 150ms."
+    ],
+    "rules": [
+      {
+        "name": "The High-Contrast Status Rule",
+        "body": "Color is reserved exclusively for system state, review outcomes, and compliance urgency. Colored text or backgrounds for purely decorative purposes are prohibited.",
+        "section": "colors"
+      },
+      {
+        "name": "The Restrained Surface Rule",
+        "body": "The primary dark slate accent must occupy no more than 10% of any view, ensuring primary calls to action retain undisputed visual priority.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fixed-Density Scale Rule",
+        "body": "Fluid typography clamps are prohibited in core data tables and toolbars. Type sizes are fixed across viewports to maintain deterministic data alignment.",
+        "section": "typography"
+      },
+      {
+        "name": "The Monospace Reference Rule",
+        "body": "All project codes, drawing revision numbers, and authority permit IDs must render in monospace font tokens to guarantee scannability.",
+        "section": "typography"
+      },
+      {
+        "name": "The Structural Border Rule",
+        "body": "Never use drop shadows to demarcate cards or data panels. Every container boundary must be established with a solid 1px border.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Ghost Card Prohibition",
+        "body": "Never combine a 1px border with a diffuse drop shadow (blur > 8px) on interactive elements.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use strict 1px borders (#e4e4e7) to separate data sections, table cells, and panel modules.",
+      "Do display project codes (e.g. 23016), drawing revisions (R00, R01), and authority reference IDs in monospace font tokens.",
+      "Do ensure all text hits at least 4.5:1 contrast against its background for outdoor on-site readability.",
+      "Do enforce instant feedback (≤150ms transitions) on state changes, approvals, and filter selections.",
+      "Do show explicit delay counters (e.g. '4 days delayed') and expiry countdowns in prominent warning badges."
+    ],
+    "donts": [
+      "Don't use oversized rounded cards (border-radius > 16px) or puffy pill containers.",
+      "Don't use decorative gradient text (background-clip: text with gradient fills) anywhere in the application.",
+      "Don't add decorative illustrations, doodle SVGs, or marketing hero graphics to technical workflows.",
+      "Don't waste vertical screen real estate with bloated padding or arbitrary spacing gaps.",
+      "Don't reproduce legacy ERP spaghetti: avoid unstyled HTML tables, unformatted timestamps, and hidden menus.",
+      "Don't use casual pastel badges or low-contrast muted gray text for critical authority statuses.",
+      "Don't implement slow multi-step page entrance animations or delayed transitions that interrupt technical workflows.",
+      "Don't use side-stripe borders (border-left > 1px) as alert markers on table rows or list items."
+    ]
+  }
+}

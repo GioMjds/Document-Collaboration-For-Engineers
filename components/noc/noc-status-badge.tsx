@@ -1,0 +1,55 @@
+import { Lock } from 'lucide-react';
+import type { NocStatus } from '@/types/noc';
+
+interface NocStatusBadgeProps {
+  status: NocStatus;
+  isBlocked?: boolean;
+  blockerTitle?: string;
+  className?: string;
+}
+
+const styles = {
+  Approved:
+    'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
+  'Pending for Payment':
+    'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+  Rejected:
+    'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
+  Expired:
+    'bg-red-50 text-red-800 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800',
+  'Not Started':
+    'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700',
+  'Not Needed':
+    'bg-zinc-50 text-zinc-400 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-500 dark:border-zinc-800',
+} satisfies Record<NocStatus, string>;
+
+export function NocStatusBadge({
+  status,
+  isBlocked = false,
+  blockerTitle,
+  className = '',
+}: NocStatusBadgeProps) {
+  if (isBlocked && status !== 'Approved') {
+    return (
+      <span
+        title={
+          blockerTitle
+            ? `Blocked by: ${blockerTitle}`
+            : 'Blocked by prerequisite sequence'
+        }
+        className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded border bg-zinc-100 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 ${className}`}
+      >
+        <Lock className="h-3 w-3 text-zinc-500" />
+        <span>Blocked</span>
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded border ${styles[status] || styles['Not Started']} ${className}`}
+    >
+      {status}
+    </span>
+  );
+}

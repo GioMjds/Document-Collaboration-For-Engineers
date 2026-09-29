@@ -1,9 +1,18 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { requireUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Engineer Document Collaboration',
+    template: '%s | Engineer Document Collaboration',
+  },
+  description: 'A platform for managing and collaborating on engineering documents',
+}
 
 async function signOut() {
   'use server';
@@ -24,6 +33,9 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           <Link href="/documents" className="font-medium">
             Documents
           </Link>
+          <Link href="/noc-tracker" className="font-medium">
+            NOC Tracker
+          </Link>
           {isDC && <Link href="/users">Users</Link>}
           {isDC && <Link href="/archive">Archive</Link>}
           {canReview && <Link href="/review">Review queue</Link>}
@@ -38,7 +50,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           </form>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl p-4">{children}</main>
+      <main className="mx-auto max-w-7xl p-4">{children}</main>
     </div>
   );
 }

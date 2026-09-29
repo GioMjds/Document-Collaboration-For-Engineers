@@ -24,6 +24,7 @@
 - No external libraries unless aboslutely necessary.
 - Use project dependency file for correct versions.
 - Avoid redundancy unless improves usability.
+- Prioritize semantic markup/tags and accessibility attributes over `.tsx` component or page files.
 
 ## When Unsure
 

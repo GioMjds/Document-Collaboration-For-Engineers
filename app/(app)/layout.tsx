@@ -30,11 +30,14 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
     <div className="min-h-screen">
       <header className="flex items-center justify-between border-b px-4 py-3">
         <nav className="flex items-center gap-4 text-sm">
-          <Link href="/documents" className="font-medium">
-            Documents
+          <Link href="/" className="font-semibold text-slate-900 dark:text-slate-100">
+            Dashboard
           </Link>
           <Link href="/noc-tracker" className="font-medium">
             NOC Tracker
+          </Link>
+          <Link href="/documents" className="font-medium">
+            Documents
           </Link>
           {isDC && <Link href="/users">Users</Link>}
           {isDC && <Link href="/archive">Archive</Link>}

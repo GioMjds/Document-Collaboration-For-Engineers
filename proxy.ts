@@ -3,13 +3,16 @@ import { updateSession } from '@/lib/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
-  const isLogin = request.nextUrl.pathname.startsWith('/login');
+  const isAuthRoute =
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/confirm') ||
+    request.nextUrl.pathname.startsWith('/forgot-password');
 
-  if (!user && !isLogin) {
+  if (!user && !isAuthRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
-  if (user && isLogin) {
-    return NextResponse.redirect(new URL('/documents', request.url));
+  if (user && isAuthRoute) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
   return response;
 }

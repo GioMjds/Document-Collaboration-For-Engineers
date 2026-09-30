@@ -1,4 +1,4 @@
-import type { AssignedProject, ProjectNocItem, NocStatus } from '@/types/noc';
+import type { AssignedProject, ProjectNocItem } from '@/types/noc';
 
 export const SEED_PROJECTS: AssignedProject[] = [
   {
@@ -336,7 +336,7 @@ export function calculateDaysRemaining(expiryDateStr: string | null): number | n
 
 export function isExpiringSoon(expiryDateStr: string | null): boolean {
   const days = calculateDaysRemaining(expiryDateStr);
-  return days !== null && days >= 0 && days <= 7;
+  return days !== null && days >= 0 && days <= 14;
 }
 
 export function isLapsed(expiryDateStr: string | null): boolean {

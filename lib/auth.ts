@@ -15,10 +15,18 @@ export const getCurrentUser = cache(async () => {
     .from('profiles')
     .select('id, full_name, role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (!profile) return null;
-  return { ...profile, email: user.email ?? '' };
+  if (profile) {
+    return { ...profile, email: user.email ?? '' };
+  }
+
+  return {
+    id: user.id,
+    full_name: (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'Engineer',
+    role: ((user.user_metadata?.role as Role) || 'engineer') as Role,
+    email: user.email ?? '',
+  };
 });
 
 export async function requireUser() {

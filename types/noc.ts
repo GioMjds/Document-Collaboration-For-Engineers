@@ -90,3 +90,62 @@ export interface AssignedProject {
     docController: string;
   };
 }
+
+export type DisciplineStageStatus =
+  | 'Not Started'
+  | 'In Progress'
+  | 'Under Review'
+  | 'Client Approval'
+  | 'Approved'
+  | 'On Hold';
+
+export type ThirdPartySpecialistType =
+  | 'Vertical Transportation'
+  | 'Traffic Impact Study'
+  | 'Green Building'
+  | 'Topographical'
+  | 'Geotechnical';
+
+export interface ThirdPartySpecialistRecord {
+  id: string;
+  type: ThirdPartySpecialistType;
+  fileName?: string;
+  fileSize?: string;
+  uploadedBy?: string;
+  uploadedAt?: string;
+  status: 'Pending' | 'Uploaded' | 'Approved';
+}
+
+export interface DisciplineDetail {
+  status: DisciplineStageStatus;
+  updatedBy: string;
+  updatedAt: string;
+  remarks?: string;
+}
+
+export interface ProjectDisciplineStatus {
+  projectCode: string;
+  architecture: DisciplineDetail;
+  structure: DisciplineDetail;
+  mep: DisciplineDetail;
+  authorities: {
+    designStage: DisciplineStageStatus;
+    constructionStage: DisciplineStageStatus;
+    revisionStage: DisciplineStageStatus;
+    updatedBy: string;
+    updatedAt: string;
+  };
+  specialists: ThirdPartySpecialistRecord[];
+}
+
+export interface SubmittalDelayItem {
+  nocId: string;
+  projectCode: string;
+  projectName: string;
+  description: string;
+  reviewingAuthority: ReviewingAuthority;
+  planDate: string;
+  applyDate: string | null;
+  daysDelayed: number;
+  delayType: 'Unsubmitted Delay' | 'Pending Authority Review';
+}

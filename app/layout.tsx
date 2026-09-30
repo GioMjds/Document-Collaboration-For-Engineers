@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, Manrope } from 'next/font/google';
 import { RegisterServiceWorker } from '@/components/pwa/register-service-worker';
+import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 
 const manrope = Manrope({
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         )}
       >
         {children}
+        <Toaster richColors position="top-right" />
         <RegisterServiceWorker />
       </body>
     </html>

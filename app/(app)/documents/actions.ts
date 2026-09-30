@@ -124,9 +124,11 @@ export async function getDownloadUrl(documentId: string): Promise<
 export async function docNumberExists(docNumber: string): Promise<boolean> {
   await requireUser();
   const supabase = await createClient();
-  const { data } = await supabase.rpc('doc_number_taken', {
-    p_doc_number: docNumber,
-  });
+  const { data } = await supabase
+    .from('documents')
+    .select('id')
+    .eq('doc_number', docNumber)
+    .maybeSingle();
   return !!data;
 }
 

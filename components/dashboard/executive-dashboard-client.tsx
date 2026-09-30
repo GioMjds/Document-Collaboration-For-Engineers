@@ -337,7 +337,7 @@ export function ExecutiveDashboardClient({
             }`}
           >
             <Layers className="h-4 w-4" />
-            Discipline & Specialist Status (Section 5)
+            Discipline & Specialist Status
             <Badge variant="outline" className="text-xs font-mono ml-1">
               {filteredProjects.length} Projects
             </Badge>
@@ -353,7 +353,7 @@ export function ExecutiveDashboardClient({
             }`}
           >
             <AlertTriangle className="h-4 w-4 text-rose-500" />
-            Pending Delays & Expiries (Section 6)
+            Pending Delays & Expiries
             {(totalDelays > 0 || expiringNocs.length > 0) && (
               <Badge className="bg-rose-500 text-white text-xs font-mono ml-1">
                 {totalDelays + expiringNocs.length} Urgent

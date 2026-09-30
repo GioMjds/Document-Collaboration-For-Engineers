@@ -66,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         )}
       >
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster closeButton richColors position="top-right" />
         <RegisterServiceWorker />
       </body>
     </html>

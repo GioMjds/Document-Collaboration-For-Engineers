@@ -56,4 +56,9 @@
 - Resolved redirect loop: Added fallback profile in `lib/auth.ts` (`getCurrentUser`) and updated route detection in `proxy.ts`.
 - Resolved 404s: Created `app/offline/page.tsx` and generated `public/icon-192x192.png`, `public/icon-512x512.png`, `public/icon-maskable-512x512.png`.
 - Verified production build succeeded with 0 errors across all 15 routes.
+- Analyzed `20260930000000_m1_noc_tracker.sql` and user's Supabase `app_role` schema.
+- Aligned test user roles to Phase 1 scope: `admin`, `dc`, `authority_engineer`, `engineer`, `resident_engineer`, `area_manager`, `ceo`.
+- Provided Supabase SQL migration for profile assignments, matrix items, projects 23015 & 23016, member assignments, and sample NOC records.
+- Updated `lib/auth.ts`, `types/database.ts`, `app/(app)/layout.tsx`, `app/(app)/users`, `app/(app)/review`, `app/(app)/archive`, `app/(app)/documents`, `components/dashboard/executive-dashboard-client.tsx`, and `lib/project-status.ts`.
+- Verified production build (`pnpm run build`) succeeded with 0 errors across all 15 routes.
 

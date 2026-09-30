@@ -235,7 +235,8 @@ export function canUserEditDiscipline(
       return (
         normalized === 'authority_engineer' ||
         normalized === 'authority' ||
-        normalized === 'doc_controller'
+        normalized === 'doc_controller' ||
+        normalized === 'dc'
       );
     default:
       return false;

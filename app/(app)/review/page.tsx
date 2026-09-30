@@ -12,7 +12,14 @@ import {
 } from '@/components/ui/table';
 
 export default async function ReviewPage() {
-  await requireRole(['manager', 'doc_controller']);
+  await requireRole([
+    'resident_engineer',
+    'area_manager',
+    'admin',
+    'dc',
+    'doc_controller',
+    'manager',
+  ]);
   const supabase = await createClient();
 
   const { data: pending } = await supabase

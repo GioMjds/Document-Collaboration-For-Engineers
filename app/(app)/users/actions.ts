@@ -6,18 +6,37 @@ import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-type UserRoles = 'engineer' | 'manager' | 'doc_controller';
+type UserRoles =
+  | 'admin'
+  | 'dc'
+  | 'authority_engineer'
+  | 'engineer'
+  | 'resident_engineer'
+  | 'area_manager'
+  | 'ceo'
+  | 'doc_controller'
+  | 'manager';
 
 const roleSchema = z.object({
-  user_id: z.uuid(),
-  role: z.enum(['engineer', 'manager', 'doc_controller']),
+  user_id: z.string().uuid(),
+  role: z.enum([
+    'admin',
+    'dc',
+    'authority_engineer',
+    'engineer',
+    'resident_engineer',
+    'area_manager',
+    'ceo',
+    'doc_controller',
+    'manager',
+  ]),
 });
 
 export async function updateUserRole(input: {
   user_id: string;
   role: UserRoles;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireRole(['doc_controller']);
+  await requireRole(['admin', 'dc', 'doc_controller']);
 
   const parsed = roleSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: 'Invalid input.' };
@@ -37,9 +56,9 @@ export async function updateUserRole(input: {
 export async function inviteUser(input: {
   email: string;
   full_name: string;
-  role: 'engineer' | 'manager' | 'doc_controller';
+  role: UserRoles;
 }) {
-  await requireRole(['doc_controller']);
+  await requireRole(['admin', 'dc', 'doc_controller']);
   const admin = createAdminClient();
 
   const { data, error } = await admin.auth.admin.inviteUserByEmail(

@@ -21,7 +21,14 @@ export async function submitReview(input: {
   decision: 'approved' | 'rejected';
   comment?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const user = await requireRole(['manager', 'doc_controller']);
+  const user = await requireRole([
+    'resident_engineer',
+    'area_manager',
+    'admin',
+    'dc',
+    'doc_controller',
+    'manager',
+  ]);
 
   const parsed = reviewSchema.safeParse(input);
   if (!parsed.success) {

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 
 export default async function ArchivePage() {
-  await requireRole(['doc_controller']);
+  await requireRole(['dc', 'doc_controller', 'admin']);
   const supabase = await createClient();
 
   const { data: docs } = await supabase

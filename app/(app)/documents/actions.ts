@@ -139,7 +139,7 @@ export async function archiveDocument(documentId: string): Promise<
       error: string;
     }
 > {
-  const user = await requireRole(['doc_controller']);
+  const user = await requireRole(['dc', 'doc_controller', 'admin']);
   const supabase = await createClient();
 
   const { data: doc } = await supabase
@@ -173,7 +173,7 @@ export async function archiveDocument(documentId: string): Promise<
 export async function restoreDocument(
   documentId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireRole(['doc_controller']);
+  await requireRole(['dc', 'doc_controller', 'admin']);
   const supabase = await createClient();
 
   const { data: doc } = await supabase

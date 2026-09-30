@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 
 export default async function UsersPage() {
-  const me = await requireRole(['doc_controller']);
+  const me = await requireRole(['admin', 'dc', 'doc_controller']);
   const supabase = await createClient();
 
   const { data: users } = await supabase

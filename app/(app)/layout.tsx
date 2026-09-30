@@ -23,8 +23,26 @@ async function signOut() {
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   const user = await requireUser();
-  const canReview = user.role === 'manager' || user.role === 'doc_controller';
-  const isDC = user.role === 'doc_controller';
+  const canReview = [
+    'manager',
+    'resident_engineer',
+    'area_manager',
+    'doc_controller',
+    'dc',
+    'admin',
+  ].includes(user.role);
+  const canManageUsers = ['admin', 'dc', 'doc_controller'].includes(user.role);
+  const canArchive = ['dc', 'doc_controller', 'admin'].includes(user.role);
+
+  const roleLabelMap: Record<string, string> = {
+    admin: 'Admin',
+    ceo: 'CEO',
+    area_manager: 'Area Manager',
+    resident_engineer: 'Resident Engineer',
+    authority_engineer: 'Authority Engineer',
+    dc: 'Document Controller',
+    engineer: 'Engineer',
+  };
 
   return (
     <div className="min-h-screen">
@@ -39,13 +57,15 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           <Link href="/documents" className="font-medium">
             Documents
           </Link>
-          {isDC && <Link href="/users">Users</Link>}
-          {isDC && <Link href="/archive">Archive</Link>}
+          {canManageUsers && <Link href="/users">Users</Link>}
+          {canArchive && <Link href="/archive">Archive</Link>}
           {canReview && <Link href="/review">Review queue</Link>}
         </nav>
         <div className="flex items-center gap-3">
           <span className="text-sm">{user.full_name || user.email}</span>
-          <Badge variant="secondary">{user.role.replace('_', ' ')}</Badge>
+          <Badge variant="secondary">
+            {roleLabelMap[user.role] ?? user.role.replace('_', ' ')}
+          </Badge>
           <form action={signOut}>
             <Button variant="outline" size="sm" type="submit">
               Sign out

@@ -48,7 +48,8 @@ const AVAILABLE_ROLES = [
   { value: 'mep_engineer', label: 'MEP Engineer (Engr. Hisham)' },
   { value: 'authority_engineer', label: 'Authority Engineer (Engr. Rasha)' },
   { value: 'resident_engineer', label: 'Resident Engineer (Engr. Abdel)' },
-  { value: 'doc_controller', label: 'Document Controller (Ms. Jalilah)' },
+  { value: 'dc', label: 'Document Controller (Ms. Jalilah)' },
+  { value: 'doc_controller', label: 'Document Controller (Legacy doc_controller)' },
 ];
 
 export function ExecutiveDashboardClient({
@@ -87,6 +88,7 @@ export function ExecutiveDashboardClient({
         currentRole.includes('mep') ||
         currentRole.includes('authority') ||
         currentRole.includes('resident') ||
+        currentRole === 'dc' ||
         currentRole.includes('doc_controller') ||
         currentRole.includes('engineer')
       );

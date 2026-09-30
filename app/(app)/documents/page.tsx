@@ -24,7 +24,10 @@ export default async function DocumentsPage() {
   const user = await requireUser();
   const supabase = await createClient();
 
-  const isDC = user.role === 'doc_controller';
+  const isDC =
+    user.role === 'dc' ||
+    user.role === 'doc_controller' ||
+    user.role === 'admin';
 
   // RLS filters this automatically per role
   const { data: documents } = await supabase

@@ -91,25 +91,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active: boolean
           created_at: string
           email: string | null
           full_name: string
           id: string
-          role: Database["public"]["Enums"]["user_role"]
+          office: Database["public"]["Enums"]["office_site"] | null
+          role:
+            | Database["public"]["Enums"]["app_role"]
+            | Database["public"]["Enums"]["user_role"]
         }
         Insert: {
+          active?: boolean
           created_at?: string
           email?: string | null
           full_name?: string
           id: string
-          role?: Database["public"]["Enums"]["user_role"]
+          office?: Database["public"]["Enums"]["office_site"] | null
+          role?:
+            | Database["public"]["Enums"]["app_role"]
+            | Database["public"]["Enums"]["user_role"]
         }
         Update: {
+          active?: boolean
           created_at?: string
           email?: string | null
           full_name?: string
           id?: string
-          role?: Database["public"]["Enums"]["user_role"]
+          office?: Database["public"]["Enums"]["office_site"] | null
+          role?:
+            | Database["public"]["Enums"]["app_role"]
+            | Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
       }
@@ -167,6 +179,15 @@ export type Database = {
       doc_number_taken: { Args: { p_doc_number: string }; Returns: boolean }
     }
     Enums: {
+      app_role:
+        | "admin"
+        | "dc"
+        | "authority_engineer"
+        | "engineer"
+        | "resident_engineer"
+        | "area_manager"
+        | "ceo"
+      office_site: "head_office" | "site_office"
       doc_status: "draft" | "submitted" | "approved" | "rejected" | "archived"
       review_decision: "approved" | "rejected"
       user_role: "engineer" | "manager" | "doc_controller"
@@ -297,6 +318,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "admin",
+        "dc",
+        "authority_engineer",
+        "engineer",
+        "resident_engineer",
+        "area_manager",
+        "ceo",
+      ],
+      office_site: ["head_office", "site_office"],
       doc_status: ["draft", "submitted", "approved", "rejected", "archived"],
       review_decision: ["approved", "rejected"],
       user_role: ["engineer", "manager", "doc_controller"],

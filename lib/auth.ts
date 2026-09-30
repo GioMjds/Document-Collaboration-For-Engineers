@@ -2,7 +2,16 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-export type Role = 'engineer' | 'manager' | 'doc_controller';
+export type Role =
+  | 'admin'
+  | 'dc'
+  | 'authority_engineer'
+  | 'engineer'
+  | 'resident_engineer'
+  | 'area_manager'
+  | 'ceo'
+  | 'doc_controller'
+  | 'manager';
 
 export const getCurrentUser = cache(async () => {
   const supabase = await createClient();

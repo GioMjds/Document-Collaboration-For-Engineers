@@ -11,13 +11,19 @@ import {
 } from '@/components/ui/select';
 import { updateUserRole } from './actions';
 
-type Role = 'engineer' | 'manager' | 'doc_controller';
+import type { Role } from '@/lib/auth';
 
-const LABELS = {
+const LABELS: Record<Role, string> = {
+  admin: 'Admin',
+  ceo: 'CEO',
+  area_manager: 'Area Manager',
+  resident_engineer: 'Resident Engineer',
+  authority_engineer: 'Authority Engineer',
+  dc: 'Document Controller (DC)',
   engineer: 'Engineer',
-  manager: 'Manager',
-  doc_controller: 'Document Controller',
-} satisfies Record<Role, string>;
+  doc_controller: 'Document Controller (Legacy)',
+  manager: 'Manager (Legacy)',
+};
 
 export function RoleSelect({
   userId,

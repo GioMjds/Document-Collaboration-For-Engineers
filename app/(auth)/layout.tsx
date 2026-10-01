@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function AuthLayout({ children }: LayoutProps<'/'>) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
       {children}
-    </div>
+    </main>
   );
 }

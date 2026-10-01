@@ -25,6 +25,7 @@
 *.pem
 docs/superpowers/
 docs/activity-log.md
+graphify-out/
 
 # debug
 npm-debug.log*

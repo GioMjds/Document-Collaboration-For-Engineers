@@ -46,3 +46,11 @@
 
 - Product Register: `product` (essential utility, workflows, and task completion).
 - Primary Docs: Reference [PRODUCT.md](./PRODUCT.md) for strategy and users; reference [DESIGN.md](./DESIGN.md) for visual tokens and components.
+
+## After Task
+
+- Must give an user workflow after each task. Like how each component is used, what the user sees, and how they interact with it.
+- Give an brief explanation of how the code works, what it does, and how it fits into the overall system.
+- Document any assumptions or decisions made during the task.
+- Explain how it helps the user achieve their goals and how it improves their experience.
+- If it is role-based, explain how it works for that/each role and what they can do with it.

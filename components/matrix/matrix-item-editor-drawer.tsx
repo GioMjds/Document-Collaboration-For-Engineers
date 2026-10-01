@@ -1,71 +1,744 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  X,
+  Plus,
+  Trash2,
+  Lock,
+  Unlock,
+  AlertCircle,
+  Coins,
+  Calendar,
+  ListChecks,
+  Loader2,
+  Building2,
+  Info,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { NocMatrixItem } from '@/types/noc';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { getAvailablePrerequisites } from '@/lib/noc-matrix';
+import { saveMatrixItem, createMatrixItem } from '@/app/(app)/noc-matrix/actions';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import type {
+  NocMatrixItem,
+  NocStage,
+  ReviewingAuthority,
+  SubmittedBy,
+} from '@/types/noc';
 
 export interface MatrixItemEditorDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   item: NocMatrixItem | null;
+  allAuthorityItems?: NocMatrixItem[];
+  allItems?: NocMatrixItem[];
   masterAuthorityId: number;
-  allItems: NocMatrixItem[];
-  currentUserRole: string;
+  canEdit?: boolean;
+  currentUserRole?: string;
+  onSaveSuccess?: (
+    savedItem: NocMatrixItem,
+    projectsUpdated?: number,
+    nocsUpdated?: number
+  ) => void;
   onSaved?: () => void;
 }
 
-// Stub drawer placeholder for Task 5 interior implementation.
+const REVIEWING_AUTHORITIES: ReviewingAuthority[] = [
+  'DEWA',
+  'RTA',
+  'DCD',
+  'DM',
+  'Trakhees',
+  'Nakheel',
+  'Empower',
+  'EHS',
+  'DCAA',
+  'DU',
+  'Etisalat',
+  'Green Building',
+  'Third Party',
+  'DDA',
+];
+
+const STAGES: NocStage[] = [
+  'Design NOC',
+  'Construction NOC',
+  'Information NOC',
+  'Handover NOC',
+];
+
+const SUBMITTERS: SubmittedBy[] = [
+  'Consultant',
+  'Client',
+  'Contractor',
+  'Specialists',
+];
+
+interface DraftRequirement {
+  id?: string;
+  matrixItemId?: string;
+  title: string;
+  mandatory: boolean;
+  sortOrder: number;
+}
+
 export function MatrixItemEditorDrawer({
   isOpen,
   onClose,
   item,
+  allAuthorityItems,
+  allItems,
+  masterAuthorityId,
+  canEdit = true,
+  currentUserRole,
+  onSaveSuccess,
+  onSaved,
 }: MatrixItemEditorDrawerProps) {
+  const effectiveCanEdit =
+    canEdit &&
+    (currentUserRole
+      ? ['admin', 'authority_engineer', 'dc'].includes(currentUserRole)
+      : true);
+
+  const itemsList = allAuthorityItems || allItems || [];
+  const currentSeq = item ? item.sequenceNo : itemsList.length + 1;
+  const availablePrerequisites = getAvailablePrerequisites(itemsList, currentSeq);
+
+  const [description, setDescription] = useState('');
+  const [reviewingAuthority, setReviewingAuthority] = useState<ReviewingAuthority>('DEWA');
+  const [stage, setStage] = useState<NocStage>('Design NOC');
+  const [submittedBy, setSubmittedBy] = useState<SubmittedBy>('Consultant');
+  const [blockingSequenceNo, setBlockingSequenceNo] = useState<string>('none');
+  const [defaultFee, setDefaultFee] = useState<number>(0);
+  const [validityDays, setValidityDays] = useState<number>(365);
+  const [requirements, setRequirements] = useState<DraftRequirement[]>([]);
+  const [newReqTitle, setNewReqTitle] = useState('');
+  const [changeSummary, setChangeSummary] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (item) {
+        setDescription(item.description);
+        setReviewingAuthority(item.reviewingAuthority);
+        setStage(item.stage);
+        setSubmittedBy(item.submittedBy);
+        setBlockingSequenceNo(
+          item.blockingSequenceNo !== null && item.blockingSequenceNo !== undefined
+            ? String(item.blockingSequenceNo)
+            : 'none'
+        );
+        setDefaultFee(item.defaultFee ?? 0);
+        setValidityDays(item.validityDays ?? 365);
+        setRequirements(
+          item.requirements
+            ? item.requirements.map((r, i) => ({
+                id: r.id,
+                matrixItemId: r.matrixItemId,
+                title: r.title,
+                mandatory: r.mandatory,
+                sortOrder: r.sortOrder ?? i + 1,
+              }))
+            : []
+        );
+      } else {
+        setDescription('');
+        setReviewingAuthority('DEWA');
+        setStage('Design NOC');
+        setSubmittedBy('Consultant');
+        setBlockingSequenceNo('none');
+        setDefaultFee(0);
+        setValidityDays(365);
+        setRequirements([]);
+      }
+      setChangeSummary('');
+      setNewReqTitle('');
+      setIsSaving(false);
+    }
+  }, [isOpen, item]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
+
+  const handleAddRequirement = () => {
+    if (!newReqTitle.trim()) return;
+    const newItem: DraftRequirement = {
+      id: `draft-req-${Date.now()}-${requirements.length + 1}`,
+      title: newReqTitle.trim(),
+      mandatory: true,
+      sortOrder: requirements.length + 1,
+    };
+    setRequirements((prev) => [...prev, newItem]);
+    setNewReqTitle('');
+  };
+
+  const handleToggleMandatory = (index: number) => {
+    if (!effectiveCanEdit) return;
+    setRequirements((prev) =>
+      prev.map((req, i) => (i === index ? { ...req, mandatory: !req.mandatory } : req))
+    );
+  };
+
+  const handleRemoveRequirement = (index: number) => {
+    if (!effectiveCanEdit) return;
+    setRequirements((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!effectiveCanEdit || isSaving) return;
+
+    const trimmedDescription = description.trim();
+    const trimmedChangeSummary = changeSummary.trim();
+
+    if (trimmedDescription.length < 3) {
+      toast.error('NOC description must be at least 3 characters.');
+      return;
+    }
+
+    if (trimmedChangeSummary.length < 5) {
+      toast.error('Reason for template change must be at least 5 characters.');
+      return;
+    }
+
+    if (defaultFee < 0) {
+      toast.error('Default fee cannot be negative.');
+      return;
+    }
+
+    if (validityDays < 1) {
+      toast.error('Validity period must be at least 1 day.');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const parsedBlocking = blockingSequenceNo === 'none' ? null : Number(blockingSequenceNo);
+      const formattedReqs = requirements.map((r, i) => ({
+        id: r.id,
+        title: r.title.trim(),
+        mandatory: r.mandatory,
+        sortOrder: i + 1,
+      }));
+
+      if (item) {
+        // Edit existing blueprint item.
+        const res = await saveMatrixItem({
+          matrixItemId: item.id,
+          masterAuthorityId,
+          description: trimmedDescription,
+          stage,
+          reviewingAuthority,
+          submittedBy,
+          blockingSequenceNo: parsedBlocking,
+          defaultFee: Number(defaultFee),
+          validityDays: Number(validityDays),
+          requirements: formattedReqs,
+          changeSummary: trimmedChangeSummary,
+        });
+
+        if (!res.ok) {
+          toast.error(res.error || 'Failed to update statutory blueprint.');
+          setIsSaving(false);
+          return;
+        }
+
+        const projectsCount = res.data?.projectsUpdated ?? 0;
+        const nocsCount = res.data?.nocsUpdated ?? 0;
+
+        const updatedItem: NocMatrixItem = {
+          ...item,
+          description: trimmedDescription,
+          stage,
+          reviewingAuthority,
+          submittedBy,
+          blockingSequenceNo: parsedBlocking,
+          defaultFee: Number(defaultFee),
+          validityDays: Number(validityDays),
+          requirements: formattedReqs.map((r, i) => ({
+            id: r.id || `req-${Date.now()}-${i}`,
+            matrixItemId: item.id,
+            title: r.title,
+            mandatory: r.mandatory,
+            sortOrder: r.sortOrder,
+          })),
+          updatedAt: new Date().toISOString(),
+        };
+
+        toast.success(
+          `NOC #${item.sequenceNo} blueprint updated. Propagated to ${projectsCount} active ${
+            projectsCount === 1 ? 'project' : 'projects'
+          } (${nocsCount} NOCs).`
+        );
+
+        onSaveSuccess?.(updatedItem, projectsCount, nocsCount);
+        onSaved?.();
+        onClose();
+      } else {
+        // Create new blueprint item.
+        const res = await createMatrixItem({
+          masterAuthorityId,
+          description: trimmedDescription,
+          stage,
+          reviewingAuthority,
+          submittedBy,
+          blockingSequenceNo: parsedBlocking,
+          defaultFee: Number(defaultFee),
+          validityDays: Number(validityDays),
+          requirements: formattedReqs,
+          changeSummary: trimmedChangeSummary,
+        });
+
+        if (!res.ok || !res.data) {
+          toast.error(res.error || 'Failed to create statutory blueprint.');
+          setIsSaving(false);
+          return;
+        }
+
+        toast.success(
+          `Standard NOC #${res.data.sequenceNo} added and propagated to active projects.`
+        );
+
+        onSaveSuccess?.(res.data, 0, 0);
+        onSaved?.();
+        onClose();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unexpected error during save';
+      toast.error(msg);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <>
+      {/* Backdrop overlay */}
       <div
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
+
+      {/* Slide-over Drawer aside */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label={item ? `Edit NOC: ${item.description}` : 'Add Standard NOC'}
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-background border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
+        className="fixed inset-y-0 right-0 z-40 w-full sm:w-[480px] bg-background border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
       >
+        {/* Header */}
         <header className="p-4 border-b border-border bg-muted/40 shrink-0 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">
-              {item ? `Edit NOC Template #${item.sequenceNo}` : 'Add Standard NOC'}
-            </h2>
-            <p className="text-xs text-muted-foreground truncate max-w-xs">
-              {item ? item.description : 'Create a new statutory template item'}
+          <div className="space-y-0.5 min-w-0 pr-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-muted border border-border">
+                {item ? `Seq #${item.sequenceNo}` : `Seq #${currentSeq}`}
+              </span>
+              <h2 className="text-sm font-semibold text-foreground truncate">
+                {item ? 'Edit NOC Blueprint' : 'Add Standard NOC Blueprint'}
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground truncate">
+              {item ? item.description : 'Configure statutory approval baseline and sequence requirements'}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0"
             aria-label="Close drawer"
           >
             <X className="h-4 w-4" />
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs text-muted-foreground">
-          <div className="rounded border border-dashed border-border p-4 text-center">
-            <p className="font-medium text-foreground">Template Editor Drawer Stub</p>
-            <p className="mt-1">Full form fields and propagation options are implemented in Task 5.</p>
+        {/* Read-Only Notice if user cannot edit */}
+        {!effectiveCanEdit && (
+          <div
+            role="status"
+            className="mx-4 mt-3 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 shrink-0"
+          >
+            <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="font-medium">
+              Read-Only View: Editing is reserved for Authority Engineers and Document Controllers.
+            </p>
           </div>
-        </div>
+        )}
 
-        <footer className="p-4 border-t border-border bg-muted/20 flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-        </footer>
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+            {/* Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="matrix-item-description" className="text-xs font-semibold">
+                NOC Description <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id="matrix-item-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="e.g. Master Developer Concept & Architectural Clearance"
+                disabled={!effectiveCanEdit || isSaving}
+                className="min-h-16 text-xs resize-none"
+                required
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Official permit or clearance title published to project NOC registers.
+              </p>
+            </div>
+
+            {/* Authority & Stage Selection */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Reviewing Authority */}
+              <div className="space-y-1.5">
+                <Label htmlFor="matrix-item-authority" className="text-xs font-semibold">
+                  Reviewing Authority <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={reviewingAuthority}
+                  onValueChange={(val) => val && setReviewingAuthority(val as ReviewingAuthority)}
+                  disabled={!effectiveCanEdit || isSaving}
+                >
+                  <SelectTrigger id="matrix-item-authority" className="w-full h-8 text-xs bg-card">
+                    <SelectValue placeholder="Select authority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REVIEWING_AUTHORITIES.map((auth) => (
+                      <SelectItem key={auth} value={auth} className="text-xs">
+                        {auth}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Stage */}
+              <div className="space-y-1.5">
+                <Label htmlFor="matrix-item-stage" className="text-xs font-semibold">
+                  Project Stage <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={stage}
+                  onValueChange={(val) => val && setStage(val as NocStage)}
+                  disabled={!effectiveCanEdit || isSaving}
+                >
+                  <SelectTrigger id="matrix-item-stage" className="w-full h-8 text-xs bg-card">
+                    <SelectValue placeholder="Select stage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STAGES.map((s) => (
+                      <SelectItem key={s} value={s} className="text-xs">
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Submitter & Prerequisite Sequence */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Submitted By */}
+              <div className="space-y-1.5">
+                <Label htmlFor="matrix-item-submitter" className="text-xs font-semibold">
+                  Submitted By <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={submittedBy}
+                  onValueChange={(val) => val && setSubmittedBy(val as SubmittedBy)}
+                  disabled={!effectiveCanEdit || isSaving}
+                >
+                  <SelectTrigger id="matrix-item-submitter" className="w-full h-8 text-xs bg-card">
+                    <SelectValue placeholder="Select submitter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBMITTERS.map((sub) => (
+                      <SelectItem key={sub} value={sub} className="text-xs">
+                        {sub}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Prerequisite Sequence */}
+              <div className="space-y-1.5">
+                <Label htmlFor="matrix-item-prereq" className="text-xs font-semibold">
+                  Prerequisite Sequence
+                </Label>
+                <Select
+                  value={blockingSequenceNo}
+                  onValueChange={(val) => val && setBlockingSequenceNo(val)}
+                  disabled={!effectiveCanEdit || isSaving}
+                >
+                  <SelectTrigger id="matrix-item-prereq" className="w-full h-8 text-xs bg-card">
+                    <SelectValue placeholder="Select prerequisite" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-xs">
+                      None / Independent
+                    </SelectItem>
+                    {availablePrerequisites.map((p) => (
+                      <SelectItem
+                        key={p.sequenceNo}
+                        value={String(p.sequenceNo)}
+                        className="text-xs font-mono"
+                      >
+                        #{p.sequenceNo} {p.reviewingAuthority} - {p.description.slice(0, 24)}...
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Default Fee & Validity Days */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="matrix-item-fee" className="text-xs font-semibold">
+                  Default Fee (AED) <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Coins className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    id="matrix-item-fee"
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={defaultFee}
+                    onChange={(e) => setDefaultFee(Math.max(0, Number(e.target.value)))}
+                    disabled={!effectiveCanEdit || isSaving}
+                    className="h-8 pl-8 text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="matrix-item-validity" className="text-xs font-semibold">
+                  Validity Period (Days) <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    id="matrix-item-validity"
+                    type="number"
+                    min={1}
+                    value={validityDays}
+                    onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value)))}
+                    disabled={!effectiveCanEdit || isSaving}
+                    className="h-8 pl-8 text-xs font-mono"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Statutory Requirements Checklist Builder */}
+            <div className="space-y-2 border-t border-border pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <ListChecks className="h-4 w-4 text-(--site-cyan)" />
+                  <Label className="text-xs font-semibold">
+                    Statutory Requirements Checklist
+                  </Label>
+                </div>
+                <Badge variant="secondary" className="font-mono text-[10px] h-5 px-1.5">
+                  {requirements.length} {requirements.length === 1 ? 'item' : 'items'}
+                </Badge>
+              </div>
+
+              {/* Requirement Items List */}
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                {requirements.length === 0 ? (
+                  <div className="rounded border border-dashed border-border p-3 text-center text-muted-foreground text-[11px]">
+                    No statutory submittal requirements attached yet.
+                  </div>
+                ) : (
+                  requirements.map((req, idx) => (
+                    <div
+                      key={req.id || idx}
+                      className="flex items-center justify-between gap-2 rounded border border-border bg-card p-2 text-xs"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <span className="truncate text-foreground text-[11px]">
+                          {req.title}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleMandatory(idx)}
+                          disabled={!effectiveCanEdit || isSaving}
+                          className={cn(
+                            'px-1.5 py-0.5 rounded text-[10px] font-mono border transition cursor-pointer',
+                            req.mandatory
+                              ? 'bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-300'
+                              : 'bg-muted text-muted-foreground border-border'
+                          )}
+                          title="Toggle Mandatory / Optional"
+                        >
+                          {req.mandatory ? 'Mandatory' : 'Optional'}
+                        </button>
+
+                        {effectiveCanEdit && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRequirement(idx)}
+                            disabled={isSaving}
+                            className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition cursor-pointer"
+                            aria-label={`Remove requirement: ${req.title}`}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Inline Input to Add Requirement */}
+              {effectiveCanEdit && (
+                <div className="flex items-center gap-2 pt-1">
+                  <Input
+                    value={newReqTitle}
+                    onChange={(e) => setNewReqTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddRequirement();
+                      }
+                    }}
+                    placeholder="Add statutory submittal requirement..."
+                    disabled={isSaving}
+                    className="h-8 text-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddRequirement}
+                    disabled={!newReqTitle.trim() || isSaving}
+                    className="h-8 px-2.5 text-xs shrink-0 cursor-pointer"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    <span>Add</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Mandatory Change Justification */}
+            <div className="space-y-1.5 border-t border-border pt-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="matrix-item-change-summary" className="text-xs font-semibold">
+                  Reason for Template Change <span className="text-destructive">*</span>
+                </Label>
+                <span
+                  className={cn(
+                    'font-mono text-[10px]',
+                    changeSummary.trim().length >= 5
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  {changeSummary.trim().length}/5 min chars
+                </span>
+              </div>
+              <Textarea
+                id="matrix-item-change-summary"
+                value={changeSummary}
+                onChange={(e) => setChangeSummary(e.target.value)}
+                placeholder="Explain the statutory authority, circular revision, or engineering requirement rationale..."
+                disabled={!effectiveCanEdit || isSaving}
+                className="min-h-16 text-xs resize-none"
+                required
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Required audit justification logged permanently with this template revision.
+              </p>
+            </div>
+
+            {/* Propagation Alert Notice */}
+            <div className="rounded-lg border border-sky-300 bg-sky-50/70 p-3 text-xs text-sky-950 dark:border-sky-900/60 dark:bg-sky-950/20 dark:text-sky-300">
+              <div className="flex items-start gap-2.5">
+                <Info className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-xs text-sky-900 dark:text-sky-200">
+                    Automatic Project Propagation Notice
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-sky-800/90 dark:text-sky-300/80">
+                    Saving will automatically propagate to unobtained NOCs (Not Started, Pending,
+                    Rejected) across all active projects under this Master Authority. Approved NOCs
+                    will NOT be modified.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Actions */}
+          <footer className="p-4 border-t border-border bg-muted/20 shrink-0 flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isSaving}
+              className="text-xs h-8 cursor-pointer"
+            >
+              Cancel
+            </Button>
+
+            {effectiveCanEdit && (
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  isSaving ||
+                  description.trim().length < 3 ||
+                  changeSummary.trim().length < 5
+                }
+                className="bg-(--site-cyan) text-white hover:bg-(--site-cyan-hover) text-xs h-8 px-4 cursor-pointer gap-1.5 shadow-xs"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <span>{item ? 'Save Blueprint & Propagate' : 'Create & Propagate'}</span>
+                )}
+              </Button>
+            )}
+          </footer>
+        </form>
       </aside>
     </>
   );

@@ -154,6 +154,57 @@ export function NocMatrixWorkspace({
     });
   };
 
+  const currentAuthority = MASTER_AUTHORITIES.find((a) => a.id === selectedAuthorityId);
+
+  const handleSaveSuccess = (
+    savedItem: NocMatrixItem,
+    projectsUpdated?: number,
+    nocsUpdated?: number
+  ) => {
+    // Optimistically update items cache.
+    setItemsCache((prev) => {
+      const existingList = prev[selectedAuthorityId] || [];
+      const itemIndex = existingList.findIndex((i) => i.id === savedItem.id);
+      let updatedList: NocMatrixItem[];
+      if (itemIndex >= 0) {
+        updatedList = existingList.map((i) => (i.id === savedItem.id ? savedItem : i));
+      } else {
+        updatedList = [...existingList, savedItem];
+      }
+      return {
+        ...prev,
+        [selectedAuthorityId]: updatedList.sort((a, b) => a.sequenceNo - b.sequenceNo),
+      };
+    });
+
+    // Optimistically prepend revision to audit log cache.
+    setRevisionsCache((prev) => {
+      const existingRevs = prev[selectedAuthorityId] || [];
+      const newRev: NocMatrixRevision = {
+        id: `rev-optimistic-${Date.now()}`,
+        masterAuthorityId: selectedAuthorityId,
+        matrixItemId: savedItem.id,
+        action: editingItem ? 'UPDATE' : 'CREATE',
+        changedBy: 'current-user',
+        changedByName: 'Authority Engineer',
+        changedByRole: currentUserRole,
+        changeSummary: editingItem
+          ? `Blueprint #${savedItem.sequenceNo} (${savedItem.reviewingAuthority}) updated: ${savedItem.description}`
+          : `New standard NOC #${savedItem.sequenceNo} (${savedItem.reviewingAuthority}) added: ${savedItem.description}`,
+        propagatedProjectsCount: projectsUpdated ?? 0,
+        propagatedNocsCount: nocsUpdated ?? 0,
+        createdAt: new Date().toISOString(),
+      };
+      return {
+        ...prev,
+        [selectedAuthorityId]: [newRev, ...existingRevs],
+      };
+    });
+
+    // Background synchronization with database.
+    handleRefreshCurrentAuthority();
+  };
+
   const filteredItems = currentItems.filter((item) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
@@ -457,7 +508,7 @@ export function NocMatrixWorkspace({
         </div>
       </div>
 
-      {/* Editor Drawer Stub (Interactive in Task 5) */}
+      {/* Editor Drawer */}
       <MatrixItemEditorDrawer
         isOpen={isEditorOpen}
         onClose={() => {
@@ -465,17 +516,19 @@ export function NocMatrixWorkspace({
           setEditingItem(null);
         }}
         item={editingItem}
+        allAuthorityItems={currentItems}
         masterAuthorityId={selectedAuthorityId}
-        allItems={currentItems}
+        canEdit={canEdit}
         currentUserRole={currentUserRole}
-        onSaved={handleRefreshCurrentAuthority}
+        onSaveSuccess={handleSaveSuccess}
       />
 
-      {/* Revision Drawer Stub (Interactive in Task 5) */}
+      {/* Revision Drawer */}
       <MatrixRevisionDrawer
         isOpen={isRevisionDrawerOpen}
         onClose={() => setIsRevisionDrawerOpen(false)}
         masterAuthorityId={selectedAuthorityId}
+        masterAuthorityName={currentAuthority?.name || 'Master Authority'}
         revisions={currentRevisions}
       />
     </div>

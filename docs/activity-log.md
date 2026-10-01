@@ -115,3 +115,12 @@
 - Implemented Part 2 of Sprint 1 (Live Query Wireup): Created `lib/server/noc-data.ts` to query `projects` and `project_nocs` via Supabase server client with automatic dual-axis RLS scoping and resilient fallback to seed arrays when live tables have zero rows.
 - Refactored `app/(app)/noc-tracker/page.tsx` and `app/(app)/page.tsx` to read live data from `getNocTrackerData()`.
 - Verified TypeScript compilation (`npx tsc --noEmit`) and Next.js production build (`pnpm run build`) exited with 0 errors across all 16 routes. Sprint 1 is officially 100% complete.
+- Resolved 7 UI and logic bugs identified in verification review:
+  - Bug 1 (NOC Alert Banner): Added `isPlanDueOrAtRisk` check to prevent false green compliance banner when unsubmitted NOCs have reached or passed their plan dates; added action alert button with filter.
+  - Bug 2 (Dashboard KPI): Fixed mislabeled "Avg days delayed past plan" by computing `planDelayDays` alongside authority review duration, rendering explicit days under review and actual delay past plan.
+  - Bug 3 (Dashboard KPI): Updated Authority Clearance KPI card to display concrete counts (e.g. 3 of 17 NOCs Approved) alongside percentage clearance.
+  - Bug 4 (Dashboard Tab Badge): Resolved empty red pill badge by adding `--color-destructive-foreground` to Tailwind theme and `:root`/`.dark` tokens, and setting explicit white text on the badge.
+  - Bug 5 (Dashboard UI Leaks): Removed "Discipline Progress (Section 5)" PDF section artifact from UI heading and cleaned internal comments.
+  - Bug 6 (NOC Tracker Header): Initialized project roles with seed defaults and added name-based discipline matching to prevent MEP engineer from being misassigned as Civil engineer.
+  - Bug 7 (Documents Table Overflow): Wrapped Documents table in responsive card container with explicit column widths, text wrapping on document titles, and actions alignment to prevent the Download column from being cut off.
+- Verified TypeScript compilation (`npx tsc --noEmit`) and Next.js production build (`pnpm run build`) with zero errors across all 16 routes.

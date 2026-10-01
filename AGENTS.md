@@ -54,3 +54,5 @@
 - Document any assumptions or decisions made during the task.
 - Explain how it helps the user achieve their goals and how it improves their experience.
 - If it is role-based, explain how it works for that/each role and what they can do with it.
+- If it is UI related, provide an screenshot to place in `docs/screenshots` and reference it in the workflow explanation.
+- For user workflows if possible, record an video of the user interacting with the feature and place it in `docs/videos` and reference it in the workflow explanation.

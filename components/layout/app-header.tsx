@@ -11,6 +11,7 @@ import {
   Users,
   Archive,
   LogOut,
+  Layers,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,6 +60,12 @@ export function AppHeader({
       href: '/noc-tracker',
       icon: ShieldCheck,
       active: pathname.startsWith('/noc-tracker'),
+    },
+    {
+      label: 'NOC Matrix',
+      href: '/noc-matrix' as Route,
+      icon: Layers,
+      active: pathname.startsWith('/noc-matrix'),
     },
     {
       label: 'Documents',
@@ -170,7 +177,7 @@ export function AppHeader({
         <div className="flex items-center gap-3">
           {/* Mobile Navigation Dropdown/Scroll (visible on small screens) */}
           <div className="flex items-center gap-1 md:hidden">
-            {navItems.slice(0, 3).map((item) => {
+            {navItems.slice(0, 4).map((item) => {
               const Icon = item.icon;
               return (
                 <Link

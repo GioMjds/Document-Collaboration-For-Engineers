@@ -67,9 +67,16 @@ export function SubmittalDelayTable({
                           +{item.daysDelayed}d past plan
                         </Badge>
                       ) : (
-                        <Badge className="bg-purple-100 text-purple-800 border-purple-300 font-mono text-xs dark:bg-purple-950/60 dark:text-purple-300">
-                          {item.daysDelayed}d with authority
-                        </Badge>
+                        <div className="flex flex-col gap-0.5">
+                          <Badge className="bg-purple-100 text-purple-800 border-purple-300 font-mono text-xs dark:bg-purple-950/60 dark:text-purple-300">
+                            {item.daysDelayed}d with authority
+                          </Badge>
+                          {typeof item.planDelayDays === 'number' && item.planDelayDays > 0 && (
+                            <span className="text-[10px] text-muted-foreground font-mono">
+                              +{item.planDelayDays}d past target plan
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">

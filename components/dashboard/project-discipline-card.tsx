@@ -123,10 +123,10 @@ export function ProjectDisciplineCard({
           />
         )}
 
-        {/* Section 5: Current Status of Disciplines */}
+        {/* Current Status of Disciplines */}
         <div className="space-y-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Discipline Progress (Section 5)
+            Discipline Progress
           </span>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
             <DisciplineStatusBadge
@@ -169,7 +169,7 @@ export function ProjectDisciplineCard({
           </div>
         </div>
 
-        {/* Section 5: Authorities Stages */}
+        {/* Authorities Stages */}
         <div className="pt-2 border-t border-border">
           <AuthoritiesStageRow
             designStage={statusRecord.authorities.designStage}
@@ -183,7 +183,7 @@ export function ProjectDisciplineCard({
           />
         </div>
 
-        {/* Section 5: Third-Party Specialists */}
+        {/* Third-Party Specialists */}
         <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />

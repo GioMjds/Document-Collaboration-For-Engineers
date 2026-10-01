@@ -7,8 +7,11 @@ interface DashboardKpiRibbonProps {
   totalProjects: number;
   delayedCount: number;
   avgDelayDays: number;
+  avgPlanDelayDays?: number;
   expiringCount: number;
   clearanceRate: number;
+  approvedNocCount?: number;
+  totalNocCount?: number;
   activeFilter?: 'all' | 'delayed' | 'expiring';
   onSelectFilter?: (filter: 'all' | 'delayed' | 'expiring') => void;
   stageDistribution?: Record<string, number>;
@@ -18,8 +21,11 @@ export function DashboardKpiRibbon({
   totalProjects,
   delayedCount,
   avgDelayDays,
+  avgPlanDelayDays,
   expiringCount,
   clearanceRate,
+  approvedNocCount,
+  totalNocCount,
   activeFilter = 'all',
   onSelectFilter,
   stageDistribution,
@@ -91,7 +97,10 @@ export function DashboardKpiRibbon({
           <span className="ml-1 text-xs text-muted-foreground">Submittals</span>
         </div>
         <span className="mt-1 text-[11px] text-muted-foreground">
-          Avg {avgDelayDays} days delayed past plan
+          Avg {avgDelayDays}d under review
+          {typeof avgPlanDelayDays === 'number' && avgPlanDelayDays > 0
+            ? ` · ${avgPlanDelayDays}d past plan`
+            : ''}
         </span>
       </button>
 
@@ -133,12 +142,16 @@ export function DashboardKpiRibbon({
         </div>
         <div className="mt-2">
           <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {clearanceRate}%
+            {typeof approvedNocCount === 'number' && typeof totalNocCount === 'number'
+              ? `${approvedNocCount} of ${totalNocCount}`
+              : `${clearanceRate}%`}
           </span>
-          <span className="ml-1 text-xs text-muted-foreground">Approved</span>
+          <span className="ml-1 text-xs text-muted-foreground">
+            {typeof approvedNocCount === 'number' ? 'NOCs Approved' : 'Approved'}
+          </span>
         </div>
         <span className="mt-1 text-[11px] text-muted-foreground">
-          NOC compliance rate
+          {clearanceRate}% portfolio clearance
         </span>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Clock, Ban, Check } from 'lucide-react';
 import type { ProjectNocItem } from '@/types/noc';
-import { isExpiringSoon } from '@/lib/noc-tracker';
+import { isExpiringSoon, isPlanDueOrAtRisk } from '@/lib/noc-tracker';
 
 interface NocAlertBannerProps {
   items: ProjectNocItem[];
@@ -22,8 +22,24 @@ export function NocAlertBanner({
   const pendingPaymentCount = items.filter(
     (i) => i.status === 'Pending for Payment',
   ).length;
+  const dueOrAtRiskCount = items.filter(
+    (i) =>
+      (i.status === 'Not Started' || !i.applyDate) &&
+      i.status !== 'Approved' &&
+      i.status !== 'Not Needed' &&
+      isPlanDueOrAtRisk(i.planDate),
+  ).length;
 
-  if (expiringCount === 0 && rejectedCount === 0 && pendingPaymentCount === 0) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  if (
+    expiringCount === 0 &&
+    rejectedCount === 0 &&
+    pendingPaymentCount === 0 &&
+    dueOrAtRiskCount === 0
+  ) {
     return (
       <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium border rounded bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-800">
         <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -43,6 +59,23 @@ export function NocAlertBanner({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {dueOrAtRiskCount > 0 && (
+          <button
+            type="button"
+            onClick={() =>
+              onSelectFilter(activeFilter === 'due-risk' ? null : 'due-risk')
+            }
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+              activeFilter === 'due-risk'
+                ? 'bg-amber-600 text-white border-amber-600'
+                : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800'
+            }`}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            <span>{dueOrAtRiskCount} Due or At Risk</span>
+          </button>
+        )}
+
         {expiringCount > 0 && (
           <button
             type="button"

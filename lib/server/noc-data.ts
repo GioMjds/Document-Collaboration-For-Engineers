@@ -95,15 +95,16 @@ function mapDbProjectToAssigned(
   p: RawDbProject,
   masterAuth: MasterAuthority,
 ): AssignedProject {
+  const seed = SEED_PROJECTS.find((sp) => sp.code === p.code);
   const roles: AssignedProject['assignedRoles'] = {
-    authorityEngineer: 'Unassigned',
-    architectEngineer: 'Unassigned',
-    mepEngineer: 'Unassigned',
-    structureEngineer: 'Unassigned',
-    civilEngineer: 'Unassigned',
-    residentEngineer: 'Unassigned',
-    areaManager: 'Unassigned',
-    docController: 'Unassigned',
+    authorityEngineer: seed?.assignedRoles.authorityEngineer ?? 'Unassigned',
+    architectEngineer: seed?.assignedRoles.architectEngineer ?? 'Unassigned',
+    mepEngineer: seed?.assignedRoles.mepEngineer ?? 'Unassigned',
+    structureEngineer: seed?.assignedRoles.structureEngineer ?? 'Unassigned',
+    civilEngineer: seed?.assignedRoles.civilEngineer ?? 'Unassigned',
+    residentEngineer: seed?.assignedRoles.residentEngineer ?? 'Unassigned',
+    areaManager: seed?.assignedRoles.areaManager ?? 'Unassigned',
+    docController: seed?.assignedRoles.docController ?? 'Unassigned',
   };
 
   if (p.project_members && Array.isArray(p.project_members)) {
@@ -111,6 +112,7 @@ function mapDbProjectToAssigned(
       const profile = pm.profiles;
       if (!profile) continue;
       const name = profile.full_name || 'Engineer';
+      const lower = name.toLowerCase();
       switch (profile.role) {
         case 'authority_engineer':
           roles.authorityEngineer = name;
@@ -126,7 +128,15 @@ function mapDbProjectToAssigned(
           roles.docController = name;
           break;
         case 'engineer':
-          if (roles.civilEngineer === 'Unassigned') {
+          if (lower.includes('mep')) {
+            roles.mepEngineer = name;
+          } else if (lower.includes('architect')) {
+            roles.architectEngineer = name;
+          } else if (lower.includes('structur')) {
+            roles.structureEngineer = name;
+          } else if (lower.includes('civil') || lower.includes('ismail')) {
+            roles.civilEngineer = name;
+          } else if (roles.civilEngineer === 'Unassigned') {
             roles.civilEngineer = name;
           }
           break;

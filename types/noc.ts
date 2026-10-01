@@ -256,6 +256,7 @@ export interface SubmittalDelayItem {
   planDate: string;
   applyDate: string | null;
   daysDelayed: number;
+  planDelayDays?: number;
   delayType: 'Unsubmitted Delay' | 'Pending Authority Review';
 }
 

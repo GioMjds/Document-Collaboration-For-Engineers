@@ -148,11 +148,20 @@ export function ExecutiveDashboardClient({
     return Math.round(sum / totalDelays);
   }, [delayItems, totalDelays]);
 
+  const avgPlanDelayDays = useMemo(() => {
+    if (totalDelays === 0) return 0;
+    const sum = delayItems.reduce((acc, d) => acc + (d.planDelayDays ?? d.daysDelayed), 0);
+    return Math.round(sum / totalDelays);
+  }, [delayItems, totalDelays]);
+
+  const approvedNocsCount = useMemo(() => {
+    return filteredNocs.filter((n) => n.status === 'Approved').length;
+  }, [filteredNocs]);
+
   const clearanceRate = useMemo(() => {
     if (filteredNocs.length === 0) return 0;
-    const approved = filteredNocs.filter((n) => n.status === 'Approved').length;
-    return Math.round((approved / filteredNocs.length) * 100);
-  }, [filteredNocs]);
+    return Math.round((approvedNocsCount / filteredNocs.length) * 100);
+  }, [filteredNocs, approvedNocsCount]);
 
   const handleUpdateDiscipline = (
     projectCode: string,
@@ -399,8 +408,11 @@ export function ExecutiveDashboardClient({
         totalProjects={visibleProjects.length}
         delayedCount={totalDelays}
         avgDelayDays={avgDelayDays}
+        avgPlanDelayDays={avgPlanDelayDays}
         expiringCount={expiringNocs.length}
         clearanceRate={clearanceRate}
+        approvedNocCount={approvedNocsCount}
+        totalNocCount={filteredNocs.length}
         activeFilter={kpiFilter}
         onSelectFilter={handleKpiSelect}
         stageDistribution={stageDistribution}
@@ -440,7 +452,7 @@ export function ExecutiveDashboardClient({
             <AlertTriangle className="h-4 w-4 text-destructive" />
             Pending Delays & Expiries
             {(totalDelays > 0 || expiringNocs.length > 0) && (
-              <Badge className="bg-destructive text-destructive-foreground text-xs font-mono ml-1">
+              <Badge className="bg-destructive text-white text-xs font-mono ml-1">
                 {totalDelays + expiringNocs.length} Urgent
               </Badge>
             )}
@@ -448,7 +460,7 @@ export function ExecutiveDashboardClient({
         </div>
       </div>
 
-      {/* Tab 1: Discipline & Specialist Status Grid (Section 5) */}
+      {/* Tab 1: Discipline & Specialist Status Grid */}
       {activeTab === 'disciplines' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -512,7 +524,7 @@ export function ExecutiveDashboardClient({
         </div>
       )}
 
-      {/* Tab 2: Pending Delays & Expiry Watchlist (Section 6) */}
+      {/* Tab 2: Pending Delays & Expiry Watchlist */}
       {activeTab === 'delays' && (
         <SubmittalDelayTable
           delayItems={delayItems}

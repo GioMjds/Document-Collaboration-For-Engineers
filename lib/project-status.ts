@@ -183,6 +183,7 @@ export function calculateSubmittalDelays(
           planDate: noc.planDate,
           applyDate: null,
           daysDelayed: days,
+          planDelayDays: days,
           delayType: 'Unsubmitted Delay',
         });
       }
@@ -191,6 +192,14 @@ export function calculateSubmittalDelays(
       applied.setHours(0, 0, 0, 0);
       const diffMs = today.getTime() - applied.getTime();
       const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      let planDelayDays = 0;
+      if (noc.planDate) {
+        const plan = new Date(noc.planDate);
+        plan.setHours(0, 0, 0, 0);
+        const planDiffMs = applied.getTime() - plan.getTime();
+        planDelayDays = Math.max(0, Math.floor(planDiffMs / (1000 * 60 * 60 * 24)));
+      }
 
       if (days >= 0) {
         delayItems.push({
@@ -202,6 +211,7 @@ export function calculateSubmittalDelays(
           planDate: noc.planDate,
           applyDate: noc.applyDate,
           daysDelayed: days,
+          planDelayDays,
           delayType: 'Pending Authority Review',
         });
       }

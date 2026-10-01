@@ -28,7 +28,7 @@ import type {
   ProjectLifecycleStage,
   StageMilestoneDates,
 } from '@/types/noc';
-import { isExpiringSoon } from '@/lib/noc-tracker';
+import { isExpiringSoon, isPlanDueOrAtRisk } from '@/lib/noc-tracker';
 
 interface NocTrackerClientProps {
   projects: AssignedProject[];
@@ -111,6 +111,17 @@ export function NocTrackerClient({
         if (item.status !== 'Rejected') return false;
       } else if (urgentFilter === 'pending-payment') {
         if (item.status !== 'Pending for Payment') return false;
+      } else if (urgentFilter === 'due-risk') {
+        if (
+          !(
+            (item.status === 'Not Started' || !item.applyDate) &&
+            item.status !== 'Approved' &&
+            item.status !== 'Not Needed' &&
+            isPlanDueOrAtRisk(item.planDate)
+          )
+        ) {
+          return false;
+        }
       }
 
       // Reviewing authority filter

@@ -352,6 +352,17 @@ export function isLapsed(expiryDateStr: string | null): boolean {
   return days !== null && days < 0;
 }
 
+// Evaluates if an unsubmitted NOC has reached plan date or is due within the threshold window.
+export function isPlanDueOrAtRisk(planDateStr: string | null, daysThreshold = 7): boolean {
+  if (!planDateStr) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const plan = new Date(planDateStr);
+  plan.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((plan.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return diffDays <= daysThreshold;
+}
+
 export function checkBlockingPrerequisite(
   item: ProjectNocItem,
   allNocs: ProjectNocItem[],

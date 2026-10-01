@@ -17,16 +17,14 @@ import type {
 } from '@/types/noc';
 import type { Database, Json } from '@/types/database';
 
-export { getAvailablePrerequisites };
-
-export const matrixRequirementSchema = z.object({
+const matrixRequirementSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Requirement title is required'),
   mandatory: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
 });
 
-export const updateMatrixItemSchema = z.object({
+const updateMatrixItemSchema = z.object({
   matrixItemId: z.string().min(1, 'Matrix item ID is required'),
   masterAuthorityId: z.number().int(),
   description: z
@@ -43,7 +41,7 @@ export const updateMatrixItemSchema = z.object({
   changeSummary: z.string().min(5, 'Change summary must be at least 5 characters'),
 });
 
-export const createMatrixItemSchema = z.object({
+const createMatrixItemSchema = z.object({
   masterAuthorityId: z.number().int(),
   description: z
     .string()
@@ -59,7 +57,7 @@ export const createMatrixItemSchema = z.object({
   changeSummary: z.string().min(5, 'Change summary must be at least 5 characters'),
 });
 
-export const deleteMatrixItemSchema = z.object({
+const deleteMatrixItemSchema = z.object({
   matrixItemId: z.string().min(1, 'Matrix item ID is required'),
   changeSummary: z.string().min(5, 'Change summary must be at least 5 characters'),
 });

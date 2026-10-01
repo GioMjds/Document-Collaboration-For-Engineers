@@ -110,3 +110,8 @@
   - Created automated verification script `scripts/verify-noc-matrix.ts` proving acyclic prerequisite calculations and strict immutability of Approved NOCs under the Golden Propagation Rule.
   - Verified TypeScript compilation: `npx tsc --noEmit` exited with 0 errors.
   - Verified Next.js production build: `pnpm run build` compiled 16/16 routes cleanly with 0 errors.
+- Updated `docs/phase-1-scope-gap-analysis.md` to reflect full completion of the NOC Matrix Template Editor, atomic propagation engine, fee payer tracking, resubmission audit history, and role-gated admin sequence overrides.
+- Verified live Supabase database schema via `db.md`: All Sprint 1 migration tables (`noc_matrix_requirements`, `noc_matrix_revisions`, `project_noc_requirements`, `noc_resubmission_history`), augmented columns on `project_nocs` and `noc_matrix_items`, enums, and RLS policies are active and confirmed live in cloud database.
+- Implemented Part 2 of Sprint 1 (Live Query Wireup): Created `lib/server/noc-data.ts` to query `projects` and `project_nocs` via Supabase server client with automatic dual-axis RLS scoping and resilient fallback to seed arrays when live tables have zero rows.
+- Refactored `app/(app)/noc-tracker/page.tsx` and `app/(app)/page.tsx` to read live data from `getNocTrackerData()`.
+- Verified TypeScript compilation (`npx tsc --noEmit`) and Next.js production build (`pnpm run build`) exited with 0 errors across all 16 routes. Sprint 1 is officially 100% complete.

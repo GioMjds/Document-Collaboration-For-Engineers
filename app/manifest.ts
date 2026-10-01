@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Engineer Document Collaboration',
-    short_name: 'DocuCollab',
+    name: 'CVTEC Engineer CMS',
+    short_name: 'CVTEC CMS',
     description: 'Collaborative document management and review application.',
     start_url: '/',
     scope: '/',

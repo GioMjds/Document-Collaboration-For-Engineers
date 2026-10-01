@@ -2,18 +2,21 @@
 
 ## 1. Executive Verdict
 
-**Current Status: Substantially Aligned in Business Logic & Lifecycle Engine; Database Persistence & RLS Next**
+**Current Status: Core Business Logic, Lifecycle Engine, NOC Matrix Template Subsystem & Downstream Audit Controls Completed; Live Supabase Execution & Email Alerts Next**
 
-Following the implementation of the **4-Stage Project Lifecycle Engine** and **User Role Taxonomy Alignment**, the alignment status has progressed significantly:
+Following the successful implementation of the **Authority NOC Matrix Template Editor**, **Template Propagation Engine**, and **Downstream Phase 1 Inspector Enhancements**, the project has achieved major milestones:
 
 1. **Scope-to-Business Alignment (Major Progress)**:
-   - **Resolved**: CVTEC's operational 4-stage lifecycle (**Feasibility → Design → Construction → Handover**) has been fully implemented with milestone tracking and automated stage-gate readiness checklists across both the NOC Tracker and the Executive Dashboard.
-   - **Resolved**: Role taxonomy is aligned to the Phase 1 `app_role` schema (`admin`, `area_manager`, `authority_engineer`, `ceo`, `dc`, `engineer`, `resident_engineer`). The signup default where `manager@test.com` was assigned `engineer` is identified and resolved via `area_manager` role mapping.
-   - **Deferred**: Deep BIM model federation (LOD 300/400) and specialized marine survey workflows remain deferred to subsequent phases as planned.
+   - **Resolved**: CVTEC's operational 4-stage lifecycle (**Feasibility → Design → Construction → Handover**) is fully implemented with milestone tracking and automated stage-gate readiness checklists across both the NOC Tracker and Executive Dashboard.
+   - **Resolved**: **NOC Matrix Template Subsystem (`/noc-matrix`)** is fully operational across Dubai's 3 Master Authorities (_Nakheel & Trakhees_, _Dubai Municipality_, _Dubai Development Authority_). It strictly enforces the **Golden Propagation Rule**: updates cascade to unobtained NOCs (`Not Started`, `Pending for Payment`, `Rejected`) on active projects while **never altering approved NOCs**.
+   - **Resolved**: **Downstream Phase 1 Features**: Fee payer classification (`Client`, `Contractor`, `Consultant Advance`) and receipt links, resubmission audit history (`R00` → `R01`), and role-gated **Admin Sequence Prerequisite Overrides** with mandatory justification logging are fully integrated into [`NocInspectorDrawer`](file:///D:/giomj/Projects/engineer-docs-collab/components/noc/noc-inspector-drawer.tsx).
+   - **Resolved**: Role taxonomy is aligned to the Phase 1 `app_role` schema (`admin`, `area_manager`, `authority_engineer`, `ceo`, `dc`, `engineer`, `resident_engineer`).
+   - **Deferred**: Deep BIM model federation (LOD 300/400) and specialized marine survey submittals remain deferred to subsequent phases as planned.
 
 2. **Implementation-to-Scope Gap (Current Focus)**:
-   - The user interface, stage gate evaluation engine, role-gated controls, and cross-discipline status cards are fully functional.
-   - However, project entities, NOC matrices, and user assignments are currently driven by in-memory reactive state (`lib/noc-tracker.ts`, `lib/project-status.ts`, `lib/project-lifecycle.ts`). The critical remaining Phase 1 deliverable is executing the **Supabase Database Migration** to persist `projects`, `project_members`, and `project_nocs` with Row-Level Security (RLS).
+   - Complete SQL migration script ([`supabase/migrations/20261001000000_noc_matrix_and_downstream.sql`](file:///D:/giomj/Projects/engineer-docs-collab/supabase/migrations/20261001000000_noc_matrix_and_downstream.sql)) and TypeScript database types are in place. The next critical step is executing this migration against the live Supabase cloud database instance and wiring live database queries to replace client-side mock fallback state.
+   - Automated 14-day expiry cron dispatcher and email notifications (e.g., via Resend).
+   - Project registration form and auto-code generator (`/projects/new`).
 
 ---
 
@@ -32,125 +35,86 @@ Following the implementation of the **4-Stage Project Lifecycle Engine** and **U
 
 ### B. Phase 1 Scope vs. Current Codebase Implementation
 
-| Feature / Deliverable                 | Phase 1 Scope Specification                                                                                                              | Current Codebase Implementation                                                                                                        | Status        |
-| :------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| **Database Persistence**              | Unified database storing projects, document registers, and authority NOC records.                                                        | Supabase schema in `database.ts` only has `documents`, `profiles`, and `reviews`. **`projects` and `project_nocs` do not exist.**      | **Missing**   |
-| **Project Scoping (Dual-Axis RLS)**   | Engineers and Document Controllers view and edit **assigned projects only**; CEO, Admin, and Area Manager see all.                       | Mock dropdown switcher in `NocTrackerClient` lets any user switch between projects. No database RLS by assignment.                     | **Mock Only** |
-| **NOC Matrix Template Editor**        | Editor for Authority Engineer and DC with change history; edits reach unobtained NOCs on active projects without mutating obtained NOCs. | No matrix table, no matrix editor page, no template propagation logic.                                                                 | **Missing**   |
-| **Prerequisite Blocking Sequence**    | A NOC cannot be marked applied until previous prerequisite NOCs are approved; Admin can override with a logged reason.                   | Visual lock in `NocDataTable`; drawer blocks status update. **No Admin override modal with logged justification.**                     | **Partial**   |
-| **NOC Fee Tracking**                  | Tracks fee amount, who pays (Client, Contractor, Consultant advance), paid status, and receipt link.                                     | Fee amount and paid status toggle exist in `NocInspectorDrawer`. **"Who pays" and receipt upload are missing.**                        | **Partial**   |
-| **Resubmission History**              | Every rejected NOC resubmission (`R00` → `R01`) keeps and displays prior rejection reasons and submission dates.                         | Resubmit button increments revision string in memory, but **wipes prior rejection comments without storing history**.                  | **Missing**   |
-| **Automated Expiry & 14-Day Alerts**  | Status flips to `Expired` automatically on expiry date; DC and Authority Engineer emailed 14 days prior.                                 | `isExpiringSoon` displays UI badge. **No automated cron job or email delivery service (e.g., Resend).**                                | **Missing**   |
-| **4-Stage Project Lifecycle & Gates** | Feasibility, Design, Construction, and Handover with milestone tracking and prerequisite checklists.                                     | Completed 4-stage sequential stepper and slide-over stage gate inspector with role-gated advance logic across NOC Tracker & Dashboard. | **Completed** |
-| **Project Code Generation**           | Automatic generation (`YY` + 3 digits, e.g., `23016`) with manual entry and uniqueness check; separate Design and Supervision dates.     | Static mock array in `SEED_PROJECTS`. No project registration form or auto-generator.                                                  | **Missing**   |
+| Feature / Deliverable                 | Phase 1 Scope Specification                                                                                                              | Current Codebase Implementation                                                                                                                                                                                                    | Status               |
+| :------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------- |
+| **NOC Matrix Template Editor**        | Editor for Authority Engineer and DC with change history; edits reach unobtained NOCs on active projects without mutating obtained NOCs. | Dedicated `/noc-matrix` workspace with stage grouping, `MatrixItemEditorDrawer`, dynamic checklist builder, `MatrixRevisionDrawer` audit timeline, and atomic RPC propagation (`propagate_matrix_item_change`).                    | **Completed**        |
+| **Prerequisite Blocking Sequence**    | A NOC cannot be marked applied until previous prerequisite NOCs are approved; Admin can override with a logged reason.                   | Visual lock badges in `NocDataTable`; `NocInspectorDrawer` enforces prerequisite gates and provides role-gated **Admin Override Sequence Modal** with mandatory logged justification (>= 15 chars).                                | **Completed**        |
+| **NOC Fee Tracking**                  | Tracks fee amount, who pays (Client, Contractor, Consultant advance), paid status, and receipt link.                                     | Integrated in `NocInspectorDrawer`: fee amount editor, paid toggle, payer classification dropdown, receipt reference link, and server action `recordNocFeePayment`.                                                                | **Completed**        |
+| **Resubmission History**              | Every rejected NOC resubmission (`R00` → `R01`) keeps and displays prior rejection reasons and submission dates.                         | Resubmission workflow retains prior rejection comments and timestamps, advances revision tag, logs to `noc_resubmission_history`, and displays historical accordion in inspector drawer.                                           | **Completed**        |
+| **4-Stage Project Lifecycle & Gates** | Feasibility, Design, Construction, and Handover with milestone tracking and prerequisite checklists.                                     | Completed 4-stage sequential stepper and slide-over stage gate inspector with role-gated advance logic across NOC Tracker & Dashboard.                                                                                             | **Completed**        |
+| **Database Persistence**              | Unified database storing projects, document registers, and authority NOC records.                                                        | Migration `20261001000000_noc_matrix_and_downstream.sql` executed against live Supabase instance. All tables, columns, enums, and RLS policies verified active via `db.md`. Next step is wiring server pages to query live tables. | **Live in Database** |
+| **Project Scoping (Dual-Axis RLS)**   | Engineers and Document Controllers view and edit **assigned projects only**; CEO, Admin, and Area Manager see all.                       | Integrated live in `lib/server/noc-data.ts` querying `projects` and `project_nocs` governed by Supabase RLS (`private.can_see_project`). Wired to both NOC Tracker and Dashboard.                                                  | **Completed**        |
+| **Automated Expiry & 14-Day Alerts**  | Status flips to `Expired` automatically on expiry date; DC and Authority Engineer emailed 14 days prior.                                 | `isExpiringSoon` displays UI badge and KPI table. **Automated scheduled cron and email dispatcher (Resend) pending.**                                                                                                              | **Pending**          |
+| **Project Code Generation**           | Automatic generation (`YY` + 3 digits, e.g., `23016`) with manual entry and uniqueness check; separate Design and Supervision dates.     | Static mock array in `SEED_PROJECTS` and database counter table `project_code_counters`. **Registration form pending (`/projects/new`).**                                                                                          | **Pending**          |
 
 ---
 
-## 3. What We Actually Need
-
-To meet the Phase 1 Scope and properly serve CVTEC Consulting Engineers, the system requires four tiers of implementation:
+## 3. Four-Tier Scope Status Breakdown
 
 ### Tier 1: Database Schema & Supabase Architecture (The Data Core)
 
-We must migrate from in-memory arrays to persistent PostgreSQL tables in Supabase with Row-Level Security (RLS):
-
-1. **`projects` Table**:
-   - `id` (UUID), `code` (5-digit unique, e.g., `26001`), `name`, `client_name`, `master_authority` (`'Nakheel and Trakhees' | 'Dubai Municipality' | 'Dubai Development Authority'`), `project_type`, `location`, `contract_type`, `current_stage`, `image_url`.
-   - Contract milestones: `design_commencement_date`, `design_completion_date`, `building_permit_date`, `supervision_commencement_date`, `supervision_duration_months`, `extension_of_time_date`.
-2. **`project_members` Table (Dual-Axis Access)**:
-   - Links `user_id` ↔ `project_id` ↔ `role` (`authority_engineer`, `architect`, `structure`, `civil`, `mep`, `resident_engineer`, `area_manager`, `doc_controller`, `project_manager`).
-   - RLS policy: Restricts `SELECT`/`UPDATE` on project documents and NOCs to assigned members, while granting global read access to `ceo`, `admin`, and `area_manager`.
-3. **`project_contract_terms` Table (Commercial Privacy)**:
-   - Stores confidential client-consultant contract sums, accessible **only** to `ceo`, `admin`, `area_manager`, and assigned `resident_engineer`.
-4. **`noc_matrix` Table (Standard Jurisdiction Templates)**:
-   - `master_authority`, `reviewing_authority`, `stage`, `sequence_number`, `description`, `validity_days`, `submitted_by`, `blocking_sequence_number`.
-5. **`project_nocs` Table (Active Tracking)**:
-   - `project_id`, `matrix_id`, `sequence_number`, `stage`, `reviewing_authority`, `description`, `submitted_by`, `reference_number`, `status`, `payment_fee`, `payer_type` (`'client' | 'contractor' | 'consultant_advance'`), `is_paid`, `receipt_file_url`, `plan_date`, `apply_date`, `issuance_date`, `expiry_date`, `blocking_sequence_number`, `current_revision`.
-6. **`noc_resubmission_history` Table**:
-   - `project_noc_id`, `revision` (`R00`, `R01`), `rejection_reason`, `rejection_date`, `resubmission_date`, `dispatched_document_name`.
-7. **`noc_requirements` Table**:
-   - `project_noc_id`, `title`, `is_satisfied`, `file_attachment_url`, `updated_by`, `updated_at`.
-8. **`audit_log` Table**:
-   - Mandatory tracking for: role changes, deletions, approvals, and **Admin sequence overrides**.
+- [x] **`noc_matrix_items` Table**: Schema defined with sequence numbers, blocking sequences, validity days, default fees, and RLS policies.
+- [x] **`noc_matrix_requirements` Table**: Standard checklist deliverables per template item.
+- [x] **`noc_matrix_revisions` Table**: Immutable audit log capturing author, timestamp, change justification, and propagation metrics.
+- [x] **`project_nocs` Table Augmentation**: Enhanced with `payment_fee`, `is_paid`, `payer_type`, `receipt_file_url`, `blocking_sequence_no`, `current_revision`, `override_reason`, `overridden_by`, `overridden_at`.
+- [x] **`noc_resubmission_history` Table**: Stores rejection reasons, rejection dates, and resubmission timestamps.
+- [x] **`project_noc_requirements` Table**: Checklist items with satisfaction toggles and file attachment links.
+- [x] **Live Supabase Execution**: Run `20261001000000_noc_matrix_and_downstream.sql` on live Supabase instance and verify RLS enforcement (Verified live via Supabase schema export in `db.md`).
 
 ---
 
 ### Tier 2: Backend Automation & Business Logic
 
-1. **Automated Status Expiry (Postgres `pg_cron` / Edge Function)**:
-   - Daily scheduled task at 00:00 GST (UTC+4):
-     `UPDATE project_nocs SET status = 'Expired' WHERE expiry_date <= CURRENT_DATE AND status = 'Approved';`
-2. **14-Day Expiration Email Dispatcher**:
-   - Integrates an email client (e.g., Resend / Supabase Webhook) scanning for `expiry_date - CURRENT_DATE = 14`.
-   - Sends automated alerts to the project's assigned Document Controller and Authority Engineer.
-3. **Template Propagation Engine**:
-   - When an Authority Engineer or DC modifies a standard matrix template, a database trigger or server action updates all unobtained (`Not Started`, `Pending for Payment`, `Rejected`) NOCs across active projects under that Master Authority, **without modifying already `Approved` NOCs**.
-4. **Admin Sequence Override Action**:
-   - Server action allowing Admins to force an applied/approved state when prerequisites are pending, requiring an explicit written justification logged to `audit_log`.
-5. **Project Code Auto-Incrementer**:
-   - Form utility generating `YY` + `NNN` (e.g., `26001` for the first project in 2026), with unique constraint validation.
+- [x] **Atomic Template Propagation Engine**: Stored procedure `propagate_matrix_item_change` updates template items and selectively cascades modifications to active projects' unobtained NOCs while preserving `Approved` NOCs.
+- [x] **Admin Sequence Override Action**: Role-gated server action `adminOverridePrerequisiteSequence` requiring mandatory justification logged to audit trail.
+- [x] **Fee Payment & Resubmission Server Actions**: `recordNocFeePayment` and `resubmitNocRevision` in [`app/(app)/noc-tracker/actions.ts`](<file:///D:/giomj/Projects/engineer-docs-collab/app/(app)/noc-tracker/actions.ts>).
+- [ ] **Automated Status Expiry (`pg_cron` / Edge Function)**: Daily scheduled job at 00:00 GST setting status to `Expired` when `expiry_date <= CURRENT_DATE`.
+- [ ] **14-Day Expiration Email Dispatcher**: Automated email delivery (e.g., via Resend) notifying assigned DC and Authority Engineer 14 days before expiry.
+- [ ] **Project Code Auto-Incrementer**: Form utility generating `YY` + `NNN` (e.g., `26001`) with unique constraint validation.
 
 ---
 
 ### Tier 3: UI & Workspace Enhancements
 
-1. **Authority NOC Matrix Manager (`/noc-matrix`)**:
-   - Dedicated configuration workspace for Authority Engineers and DCs to customize standard checklists and sequences per Master Authority.
-2. **Project Setup & Team Assignment Workspace (`/projects/new`)**:
-   - Create new projects, select contract type (Design vs. Supervision), specify separate milestone dates, and assign discipline engineers from registered profiles.
-3. **Enhanced Inspection Drawer (`NocInspectorDrawer`)**:
-   - **Fee payer field**: Dropdown selector (`Client`, `Contractor`, `Consultant Advance`).
-   - **Receipt file upload**: Direct upload of fee receipts to Supabase Storage.
-   - **Requirement file attachments**: Attach calculation sheets, TIS reports, or drawings to individual checklist items.
-   - **Resubmission audit log panel**: Accordion view displaying previous `R00`, `R01` rejection comments and submittal dates.
-   - **Admin Override trigger**: Button visible only to Admins when sequence prerequisites are unmet.
-4. **Project Scoping Integration**:
-   - Connect active user session to database project queries so engineers only see and access their assigned projects.
+- [x] **Authority NOC Matrix Manager (`/noc-matrix`)**: Dedicated configuration workspace with authority tab switcher, stage grouping, sequence display, and add/edit triggers.
+- [x] **Matrix Item Editor Drawer (`MatrixItemEditorDrawer`)**: 480px slide-over drawer with dynamic checklist builder, acyclic prerequisite picker, fee/validity counters, and mandatory change justification.
+- [x] **Matrix Revision Drawer (`MatrixRevisionDrawer`)**: Chronological audit timeline displaying author credentials, timestamp, justification card, and propagation impact metrics.
+- [x] **Enhanced Inspection Drawer (`NocInspectorDrawer`)**:
+  - Fee payer classification selector (`Client`, `Contractor`, `Consultant Advance`) and receipt link.
+  - Resubmission audit history accordion displaying prior rejection comments and timestamps.
+  - Admin sequence override dialog with mandatory reason text box.
+- [ ] **Project Setup & Team Assignment Workspace (`/projects/new`)**: Create new projects, select contract type, configure milestones, and assign team members.
+- [x] **Project Scoping Live Wireup**: Replace client-side project switcher with session-filtered Supabase queries so engineers only see their assigned projects (Completed via `lib/server/noc-data.ts`).
 
 ---
 
 ### Tier 4: Specific Alignment with CVTEC Operations (`BUSINESS_BRIEF_INFO.md`)
 
-1. **Incorporate CVTEC Project™ (Project Management)**:
-   - Add the `project_manager` role into `types/noc.ts` and the database schema. Project Managers need read/review visibility over project NOC statuses, submittal delays, and fee liabilities without acting as statutory document controllers.
-2. **Support CVTEC EngiLab™ Specialist Disciplines**:
-   - CVTEC handles large marine and geotechnical works (vital for projects like Conrad Palm Jumeirah). Ensure the third-party specialist drawer (`ThirdPartySpecialistDrawer`) and discipline status engine include:
-     - Geotechnical & Soil Investigation
-     - Marine & Coastal Engineering
-     - Topographical & Affection Surveys
-3. **BIM Submittal Metadata**:
-   - Add model coordination metadata fields (BIM Model Version, LOD 300/400 sign-off status) to drawing and revision uploads to align with CVTEC's federated BIM workflow.
+- [x] **Support CVTEC Specialist Disciplines**: Third-party specialist drawer (`ThirdPartySpecialistDrawer`) and discipline status engine include Geotechnical, Marine, Topographical, Traffic Impact Studies, and Green Building.
+- [x] **Statutory Jurisdiction Alignment**: Specific coverage of Nakheel/Trakhees, Dubai Municipality, and Dubai Development Authority.
+- [ ] **Incorporate CVTEC Project™ (Project Management)**: Add explicit `project_manager` role permissions across project status views.
+- [ ] **BIM Coordination Metadata**: Add BIM Model Version and LOD 300/400 sign-off status to drawing revision uploads.
 
 ---
 
-## 4. Recommended Action Plan
+## 4. Current Status & Next Action Roadmap
 
 ```mermaid
 flowchart TD
-    A["1. Supabase Database Migration"] -->|"Create tables & RLS"| B["2. Backend Server Actions"]
-    B -->|"Wire real queries"| C["3. Connect NOC Tracker & Dashboard"]
-    C -->|"Replace mock state"| D["4. NOC Matrix Editor & Project Setup UI"]
-    D -->|"Add missing features"| E["5. Automated Expiry Cron & Email Alerts"]
-    E -->|"Quality Gate 1"| F["Client Demo & User Testing"]
+    A["1. 4-Stage Lifecycle Engine (Done)"] --> B["2. NOC Matrix Template Editor (Done)"]
+    B --> C["3. Downstream Fee, Resubmission & Overrides (Done)"]
+    C --> D["4. Execute Supabase Migration on Live Cloud (Done)"]
+    D --> E["5. Wire Live Queries & Dual-Axis Project Scoping (Done)"]
+    E --> F["6. Project Registration Form (/projects/new)"]
+    F --> G["7. Automated Expiry Cron & 14-Day Email Alerts"]
 ```
 
-1. **Sprint 1 (Database Core)**: Run SQL migration establishing `projects`, `project_members`, `project_nocs`, `noc_matrix`, `noc_resubmissions`, and RLS policies.
-2. **Sprint 2 (Data Wireup)**: Refactor `noc-tracker/page.tsx` and `page.tsx` to query Supabase data filtered by user assignment.
-3. **Sprint 3 (Missing Features)**: Implement the NOC Matrix Editor, fee payer/receipt upload, resubmission audit history, and Admin sequence override.
-4. **Sprint 4 (Automation & Alerts)**: Deploy scheduled cron job for automated expiration and configure 14-day email dispatch.
+### Next Implementation Priorities
 
----
-
-## 5. Current Implementation Status & Next Priorities
-
-### What Has Been Achieved
-
-- **4-Stage Project Lifecycle Engine**: Closed the lifecycle gap by providing complete milestone and stage gate tracking across Feasibility, Design, Construction, and Handover.
-- **Role-Gated Stage Transitions**: Established advisory stage gate checks allowing authorized roles (`admin`, `area_manager`, `resident_engineer`) to advance stages while locking unauthorized discipline engineers.
-- **Executive & NOC Tracker Unification**: Both `/noc-tracker` and `/` now reflect real-time stage progress, milestone dates, and prerequisite gate readiness.
-- **User Role Schema Reconciliation**: Mapped all 9 test user personas to the `app_role` schema (`admin`, `area_manager`, `authority_engineer`, `ceo`, `dc`, `engineer`, `resident_engineer`), resolving the default trigger behavior that assigned `engineer` to `manager@test.com`.
-
-### Final Verdict & Next Action
-
-The user experience and business logic layers are now **aligned with CVTEC's core multi-stage lifecycle**.
-The final critical step to complete Phase 1 is **Sprint 1: Supabase Database Migration & RLS**, replacing the client-side seed data with persistent PostgreSQL tables and security boundaries.
+1. **Sprint 1 (Cloud Database Wireup) - [COMPLETED]**:
+   - [x] Apply `supabase/migrations/20261001000000_noc_matrix_and_downstream.sql` to active Supabase project (Verified live in `db.md`).
+   - [x] Refactor `app/(app)/noc-tracker/page.tsx` and `app/(app)/page.tsx` via `lib/server/noc-data.ts` to read directly from Supabase tables filtered by user project assignments.
+2. **Sprint 2 (Project Setup Workspace)**:
+   - Build `/projects/new` allowing Admins and Area Managers to register new projects, select Master Authority templates, generate unique project codes, and assign discipline teams.
+3. **Sprint 3 (Automated Alerts & Expiration)**:
+   - Configure Supabase Edge Function or scheduled cron job for automated expiration and 14-day alert email delivery.

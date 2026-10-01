@@ -1,6 +1,12 @@
 'use client';
 
-import { ChevronRight, Clock, AlertTriangle, Layers } from 'lucide-react';
+import {
+  ChevronRight,
+  Clock,
+  AlertTriangle,
+  Layers,
+  ShieldAlert,
+} from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -64,7 +70,7 @@ export function NocDataTable({
             <TableHead className="w-36 font-semibold text-zinc-700 dark:text-zinc-300">
               Authority Ref #
             </TableHead>
-            <TableHead className="w-32 font-semibold text-zinc-700 dark:text-zinc-300">
+            <TableHead className="w-36 font-semibold text-zinc-700 dark:text-zinc-300">
               Status
             </TableHead>
             <TableHead className="w-24 font-semibold text-zinc-700 dark:text-zinc-300">
@@ -73,7 +79,7 @@ export function NocDataTable({
             <TableHead className="w-28 font-semibold text-zinc-700 dark:text-zinc-300">
               Expiry date
             </TableHead>
-            <TableHead className="w-24 text-right font-semibold text-zinc-700 dark:text-zinc-300">
+            <TableHead className="w-28 text-right font-semibold text-zinc-700 dark:text-zinc-300">
               Fee (AED)
             </TableHead>
             <TableHead className="w-10 text-right" />
@@ -85,6 +91,7 @@ export function NocDataTable({
               item,
               allNocs,
             );
+            const isOverridden = Boolean(item.overrideReason);
             const daysRemaining = calculateDaysRemaining(item.expiryDate);
             const expiring =
               isExpiringSoon(item.expiryDate) && item.status !== 'Approved';
@@ -117,6 +124,12 @@ export function NocDataTable({
                       <span>Blocked: {blockerTitle}</span>
                     </div>
                   )}
+                  {isOverridden && (
+                    <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 flex items-center gap-1 line-clamp-1">
+                      <ShieldAlert className="h-3 w-3 shrink-0 text-amber-600" />
+                      <span>Override: {item.overrideReason}</span>
+                    </div>
+                  )}
                   {item.status === 'Rejected' && item.rejectionReason && (
                     <div className="text-[11px] text-rose-700 dark:text-rose-400 mt-0.5 line-clamp-1 flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 shrink-0" />
@@ -133,11 +146,22 @@ export function NocDataTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <NocStatusBadge
-                    status={item.status}
-                    isBlocked={isBlocked}
-                    blockerTitle={blockerTitle}
-                  />
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <NocStatusBadge
+                      status={item.status}
+                      isBlocked={isBlocked}
+                      blockerTitle={blockerTitle}
+                    />
+                    {isOverridden && (
+                      <span
+                        title={`Sequence prerequisite bypassed by Admin: ${item.overrideReason}`}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded border bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800"
+                      >
+                        <ShieldAlert className="h-3 w-3 text-amber-600 shrink-0" />
+                        <span>Overridden</span>
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="font-mono text-muted-foreground text-xs">
                   {item.planDate}
@@ -158,8 +182,28 @@ export function NocDataTable({
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell className="text-right font-mono font-medium">
-                  {item.paymentFee.toLocaleString()}
+                <TableCell className="text-right">
+                  <div className="font-mono font-medium">
+                    {item.paymentFee.toLocaleString()}
+                  </div>
+                  {item.isPaid && (
+                    <div className="mt-0.5 flex justify-end">
+                      <span
+                        title={
+                          item.receiptFileUrl
+                            ? `Paid by ${item.payerType === 'consultant_advance' ? 'Consultant Advance' : item.payerType || 'Client'} (Receipt: ${item.receiptFileUrl})`
+                            : `Paid by ${item.payerType === 'consultant_advance' ? 'Consultant Advance' : item.payerType || 'Client'}`
+                        }
+                        className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800"
+                      >
+                        {item.payerType
+                          ? item.payerType === 'consultant_advance'
+                            ? 'Advance'
+                            : item.payerType
+                          : 'Paid'}
+                      </span>
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <ChevronRight className="h-4 w-4 text-muted-foreground inline" />

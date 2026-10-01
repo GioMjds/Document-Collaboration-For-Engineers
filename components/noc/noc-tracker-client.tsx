@@ -130,7 +130,20 @@ export function NocTrackerClient({
           .includes(query);
         const matchesRef = item.referenceNumber.toLowerCase().includes(query);
         const matchesSubmitter = item.submittedBy.toLowerCase().includes(query);
-        if (!matchesDesc && !matchesAuth && !matchesRef && !matchesSubmitter) {
+        const matchesPayer = item.payerType
+          ? item.payerType.toLowerCase().includes(query)
+          : false;
+        const matchesOverride = item.overrideReason
+          ? item.overrideReason.toLowerCase().includes(query)
+          : false;
+        if (
+          !matchesDesc &&
+          !matchesAuth &&
+          !matchesRef &&
+          !matchesSubmitter &&
+          !matchesPayer &&
+          !matchesOverride
+        ) {
           return false;
         }
       }

@@ -56,6 +56,8 @@ export const INITIAL_NOCS_PROJECT_23016: ProjectNocItem[] = [
     status: 'Approved',
     paymentFee: 3500,
     isPaid: true,
+    payerType: 'client',
+    receiptFileUrl: 'RCP-2026-9981',
     planDate: '2026-07-15',
     applyDate: '2026-07-20',
     issuanceDate: '2026-08-10',
@@ -81,6 +83,8 @@ export const INITIAL_NOCS_PROJECT_23016: ProjectNocItem[] = [
     status: 'Approved',
     paymentFee: 5000,
     isPaid: true,
+    payerType: 'contractor',
+    receiptFileUrl: 'RTA-RCP-2023-044',
     planDate: '2026-08-01',
     applyDate: '2026-08-05',
     issuanceDate: '2026-09-01',
@@ -107,6 +111,8 @@ export const INITIAL_NOCS_PROJECT_23016: ProjectNocItem[] = [
     status: 'Rejected',
     paymentFee: 4200,
     isPaid: true,
+    payerType: 'consultant_advance',
+    receiptFileUrl: 'DCD-ADV-RCP-8812',
     planDate: '2026-08-20',
     applyDate: '2026-08-25',
     issuanceDate: null,
@@ -349,9 +355,16 @@ export function isLapsed(expiryDateStr: string | null): boolean {
 export function checkBlockingPrerequisite(
   item: ProjectNocItem,
   allNocs: ProjectNocItem[],
-): { isBlocked: boolean; blockerTitle?: string } {
+): { isBlocked: boolean; blockerTitle?: string; isOverridden?: boolean } {
+  if (item.overrideReason) {
+    return {
+      isBlocked: false,
+      isOverridden: true,
+      blockerTitle: `Overridden by Admin: ${item.overrideReason}`,
+    };
+  }
   if (!item.blockingSequenceNumber) {
-    return { isBlocked: false };
+    return { isBlocked: false, isOverridden: false };
   }
   const prerequisite = allNocs.find(
     (n) =>
@@ -361,10 +374,11 @@ export function checkBlockingPrerequisite(
   if (!prerequisite || prerequisite.status !== 'Approved') {
     return {
       isBlocked: true,
+      isOverridden: false,
       blockerTitle: prerequisite
         ? `${prerequisite.reviewingAuthority} #${prerequisite.sequenceNumber} (${prerequisite.description})`
         : `Seq #${item.blockingSequenceNumber}`,
     };
   }
-  return { isBlocked: false };
+  return { isBlocked: false, isOverridden: false };
 }

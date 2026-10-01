@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
 import { requireUser } from '@/lib/auth';
 import { ExecutiveDashboardClient } from '@/components/dashboard/executive-dashboard-client';
-import {
-  SEED_PROJECTS,
-  INITIAL_NOCS_PROJECT_23016,
-  INITIAL_NOCS_PROJECT_23015,
-} from '@/lib/noc-tracker';
+import { getNocTrackerData } from '@/lib/server/noc-data';
 
 export const metadata: Metadata = {
   title: 'Executive Command Deck',
@@ -15,16 +11,13 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const allInitialNocs = [
-    ...INITIAL_NOCS_PROJECT_23016,
-    ...INITIAL_NOCS_PROJECT_23015,
-  ];
+  const { projects, nocs } = await getNocTrackerData();
 
   return (
     <div className="py-2">
       <ExecutiveDashboardClient
-        projects={SEED_PROJECTS}
-        initialNocs={allInitialNocs}
+        projects={projects}
+        initialNocs={nocs}
         currentUserRole={user.role}
       />
     </div>

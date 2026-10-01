@@ -1,25 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
-  X,
-  Plus,
-  Trash2,
-  Lock,
-  Unlock,
-  AlertCircle,
-  Coins,
-  Calendar,
-  ListChecks,
-  Loader2,
-  Building2,
-  Info,
-} from 'lucide-react';
+  createMatrixItem,
+  saveMatrixItem,
+} from '@/app/(app)/noc-matrix/actions';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -27,9 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { getAvailablePrerequisites } from '@/lib/noc-matrix';
-import { saveMatrixItem, createMatrixItem } from '@/app/(app)/noc-matrix/actions';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type {
   NocMatrixItem,
@@ -37,6 +24,19 @@ import type {
   ReviewingAuthority,
   SubmittedBy,
 } from '@/types/noc';
+import {
+  AlertCircle,
+  Calendar,
+  Coins,
+  Info,
+  ListChecks,
+  Loader2,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export interface MatrixItemEditorDrawerProps {
   isOpen: boolean;
@@ -50,7 +50,7 @@ export interface MatrixItemEditorDrawerProps {
   onSaveSuccess?: (
     savedItem: NocMatrixItem,
     projectsUpdated?: number,
-    nocsUpdated?: number
+    nocsUpdated?: number,
   ) => void;
   onSaved?: () => void;
 }
@@ -94,7 +94,7 @@ interface DraftRequirement {
   sortOrder: number;
 }
 
-export function MatrixItemEditorDrawer({
+function MatrixItemEditorDrawerForm({
   isOpen,
   onClose,
   item,
@@ -114,60 +114,41 @@ export function MatrixItemEditorDrawer({
 
   const itemsList = allAuthorityItems || allItems || [];
   const currentSeq = item ? item.sequenceNo : itemsList.length + 1;
-  const availablePrerequisites = getAvailablePrerequisites(itemsList, currentSeq);
+  const availablePrerequisites = getAvailablePrerequisites(
+    itemsList,
+    currentSeq,
+  );
 
-  const [description, setDescription] = useState('');
-  const [reviewingAuthority, setReviewingAuthority] = useState<ReviewingAuthority>('DEWA');
-  const [stage, setStage] = useState<NocStage>('Design NOC');
-  const [submittedBy, setSubmittedBy] = useState<SubmittedBy>('Consultant');
-  const [blockingSequenceNo, setBlockingSequenceNo] = useState<string>('none');
-  const [defaultFee, setDefaultFee] = useState<number>(0);
-  const [validityDays, setValidityDays] = useState<number>(365);
-  const [requirements, setRequirements] = useState<DraftRequirement[]>([]);
+  const [description, setDescription] = useState(item?.description ?? '');
+  const [reviewingAuthority, setReviewingAuthority] =
+    useState<ReviewingAuthority>(item?.reviewingAuthority ?? 'DEWA');
+  const [stage, setStage] = useState<NocStage>(item?.stage ?? 'Design NOC');
+  const [submittedBy, setSubmittedBy] = useState<SubmittedBy>(
+    item?.submittedBy ?? 'Consultant',
+  );
+  const [blockingSequenceNo, setBlockingSequenceNo] = useState<string>(
+    item?.blockingSequenceNo !== null && item?.blockingSequenceNo !== undefined
+      ? String(item.blockingSequenceNo)
+      : 'none',
+  );
+  const [defaultFee, setDefaultFee] = useState<number>(item?.defaultFee ?? 0);
+  const [validityDays, setValidityDays] = useState<number>(
+    item?.validityDays ?? 365,
+  );
+  const [requirements, setRequirements] = useState<DraftRequirement[]>(
+    item?.requirements
+      ? item.requirements.map((r, i) => ({
+          id: r.id,
+          matrixItemId: r.matrixItemId,
+          title: r.title,
+          mandatory: r.mandatory,
+          sortOrder: r.sortOrder ?? i + 1,
+        }))
+      : [],
+  );
   const [newReqTitle, setNewReqTitle] = useState('');
   const [changeSummary, setChangeSummary] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      if (item) {
-        setDescription(item.description);
-        setReviewingAuthority(item.reviewingAuthority);
-        setStage(item.stage);
-        setSubmittedBy(item.submittedBy);
-        setBlockingSequenceNo(
-          item.blockingSequenceNo !== null && item.blockingSequenceNo !== undefined
-            ? String(item.blockingSequenceNo)
-            : 'none'
-        );
-        setDefaultFee(item.defaultFee ?? 0);
-        setValidityDays(item.validityDays ?? 365);
-        setRequirements(
-          item.requirements
-            ? item.requirements.map((r, i) => ({
-                id: r.id,
-                matrixItemId: r.matrixItemId,
-                title: r.title,
-                mandatory: r.mandatory,
-                sortOrder: r.sortOrder ?? i + 1,
-              }))
-            : []
-        );
-      } else {
-        setDescription('');
-        setReviewingAuthority('DEWA');
-        setStage('Design NOC');
-        setSubmittedBy('Consultant');
-        setBlockingSequenceNo('none');
-        setDefaultFee(0);
-        setValidityDays(365);
-        setRequirements([]);
-      }
-      setChangeSummary('');
-      setNewReqTitle('');
-      setIsSaving(false);
-    }
-  }, [isOpen, item]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -195,7 +176,9 @@ export function MatrixItemEditorDrawer({
   const handleToggleMandatory = (index: number) => {
     if (!effectiveCanEdit) return;
     setRequirements((prev) =>
-      prev.map((req, i) => (i === index ? { ...req, mandatory: !req.mandatory } : req))
+      prev.map((req, i) =>
+        i === index ? { ...req, mandatory: !req.mandatory } : req,
+      ),
     );
   };
 
@@ -234,7 +217,8 @@ export function MatrixItemEditorDrawer({
     setIsSaving(true);
 
     try {
-      const parsedBlocking = blockingSequenceNo === 'none' ? null : Number(blockingSequenceNo);
+      const parsedBlocking =
+        blockingSequenceNo === 'none' ? null : Number(blockingSequenceNo);
       const formattedReqs = requirements.map((r, i) => ({
         id: r.id,
         title: r.title.trim(),
@@ -289,7 +273,7 @@ export function MatrixItemEditorDrawer({
         toast.success(
           `NOC #${item.sequenceNo} blueprint updated. Propagated to ${projectsCount} active ${
             projectsCount === 1 ? 'project' : 'projects'
-          } (${nocsCount} NOCs).`
+          } (${nocsCount} NOCs).`,
         );
 
         onSaveSuccess?.(updatedItem, projectsCount, nocsCount);
@@ -317,7 +301,7 @@ export function MatrixItemEditorDrawer({
         }
 
         toast.success(
-          `Standard NOC #${res.data.sequenceNo} added and propagated to active projects.`
+          `Standard NOC #${res.data.sequenceNo} added and propagated to active projects.`,
         );
 
         onSaveSuccess?.(res.data, 0, 0);
@@ -325,7 +309,8 @@ export function MatrixItemEditorDrawer({
         onClose();
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unexpected error during save';
+      const msg =
+        err instanceof Error ? err.message : 'Unexpected error during save';
       toast.error(msg);
     } finally {
       setIsSaving(false);
@@ -346,7 +331,7 @@ export function MatrixItemEditorDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={item ? `Edit NOC: ${item.description}` : 'Add Standard NOC'}
-        className="fixed inset-y-0 right-0 z-40 w-full sm:w-[480px] bg-background border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
+        className="fixed inset-y-0 right-0 z-40 w-full sm:w-120 bg-background border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
       >
         {/* Header */}
         <header className="p-4 border-b border-border bg-muted/40 shrink-0 flex items-center justify-between">
@@ -360,7 +345,9 @@ export function MatrixItemEditorDrawer({
               </h2>
             </div>
             <p className="text-xs text-muted-foreground truncate">
-              {item ? item.description : 'Configure statutory approval baseline and sequence requirements'}
+              {item
+                ? item.description
+                : 'Configure statutory approval baseline and sequence requirements'}
             </p>
           </div>
           <button
@@ -381,7 +368,8 @@ export function MatrixItemEditorDrawer({
           >
             <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <p className="font-medium">
-              Read-Only View: Editing is reserved for Authority Engineers and Document Controllers.
+              Read-Only View: Editing is reserved for Authority Engineers and
+              Document Controllers.
             </p>
           </div>
         )}
@@ -391,7 +379,10 @@ export function MatrixItemEditorDrawer({
           <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
             {/* Description */}
             <div className="space-y-1.5">
-              <Label htmlFor="matrix-item-description" className="text-xs font-semibold">
+              <Label
+                htmlFor="matrix-item-description"
+                className="text-xs font-semibold"
+              >
                 NOC Description <span className="text-destructive">*</span>
               </Label>
               <Textarea
@@ -404,7 +395,8 @@ export function MatrixItemEditorDrawer({
                 required
               />
               <p className="text-[11px] text-muted-foreground">
-                Official permit or clearance title published to project NOC registers.
+                Official permit or clearance title published to project NOC
+                registers.
               </p>
             </div>
 
@@ -412,15 +404,24 @@ export function MatrixItemEditorDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Reviewing Authority */}
               <div className="space-y-1.5">
-                <Label htmlFor="matrix-item-authority" className="text-xs font-semibold">
-                  Reviewing Authority <span className="text-destructive">*</span>
+                <Label
+                  htmlFor="matrix-item-authority"
+                  className="text-xs font-semibold"
+                >
+                  Reviewing Authority{' '}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={reviewingAuthority}
-                  onValueChange={(val) => val && setReviewingAuthority(val as ReviewingAuthority)}
+                  onValueChange={(val) =>
+                    val && setReviewingAuthority(val as ReviewingAuthority)
+                  }
                   disabled={!effectiveCanEdit || isSaving}
                 >
-                  <SelectTrigger id="matrix-item-authority" className="w-full h-8 text-xs bg-card">
+                  <SelectTrigger
+                    id="matrix-item-authority"
+                    className="w-full h-8 text-xs bg-card"
+                  >
                     <SelectValue placeholder="Select authority" />
                   </SelectTrigger>
                   <SelectContent>
@@ -435,7 +436,10 @@ export function MatrixItemEditorDrawer({
 
               {/* Stage */}
               <div className="space-y-1.5">
-                <Label htmlFor="matrix-item-stage" className="text-xs font-semibold">
+                <Label
+                  htmlFor="matrix-item-stage"
+                  className="text-xs font-semibold"
+                >
                   Project Stage <span className="text-destructive">*</span>
                 </Label>
                 <Select
@@ -443,7 +447,10 @@ export function MatrixItemEditorDrawer({
                   onValueChange={(val) => val && setStage(val as NocStage)}
                   disabled={!effectiveCanEdit || isSaving}
                 >
-                  <SelectTrigger id="matrix-item-stage" className="w-full h-8 text-xs bg-card">
+                  <SelectTrigger
+                    id="matrix-item-stage"
+                    className="w-full h-8 text-xs bg-card"
+                  >
                     <SelectValue placeholder="Select stage" />
                   </SelectTrigger>
                   <SelectContent>
@@ -461,15 +468,23 @@ export function MatrixItemEditorDrawer({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Submitted By */}
               <div className="space-y-1.5">
-                <Label htmlFor="matrix-item-submitter" className="text-xs font-semibold">
+                <Label
+                  htmlFor="matrix-item-submitter"
+                  className="text-xs font-semibold"
+                >
                   Submitted By <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={submittedBy}
-                  onValueChange={(val) => val && setSubmittedBy(val as SubmittedBy)}
+                  onValueChange={(val) =>
+                    val && setSubmittedBy(val as SubmittedBy)
+                  }
                   disabled={!effectiveCanEdit || isSaving}
                 >
-                  <SelectTrigger id="matrix-item-submitter" className="w-full h-8 text-xs bg-card">
+                  <SelectTrigger
+                    id="matrix-item-submitter"
+                    className="w-full h-8 text-xs bg-card"
+                  >
                     <SelectValue placeholder="Select submitter" />
                   </SelectTrigger>
                   <SelectContent>
@@ -484,7 +499,10 @@ export function MatrixItemEditorDrawer({
 
               {/* Prerequisite Sequence */}
               <div className="space-y-1.5">
-                <Label htmlFor="matrix-item-prereq" className="text-xs font-semibold">
+                <Label
+                  htmlFor="matrix-item-prereq"
+                  className="text-xs font-semibold"
+                >
                   Prerequisite Sequence
                 </Label>
                 <Select
@@ -492,7 +510,10 @@ export function MatrixItemEditorDrawer({
                   onValueChange={(val) => val && setBlockingSequenceNo(val)}
                   disabled={!effectiveCanEdit || isSaving}
                 >
-                  <SelectTrigger id="matrix-item-prereq" className="w-full h-8 text-xs bg-card">
+                  <SelectTrigger
+                    id="matrix-item-prereq"
+                    className="w-full h-8 text-xs bg-card"
+                  >
                     <SelectValue placeholder="Select prerequisite" />
                   </SelectTrigger>
                   <SelectContent>
@@ -505,7 +526,8 @@ export function MatrixItemEditorDrawer({
                         value={String(p.sequenceNo)}
                         className="text-xs font-mono"
                       >
-                        #{p.sequenceNo} {p.reviewingAuthority} - {p.description.slice(0, 24)}...
+                        #{p.sequenceNo} {p.reviewingAuthority} -{' '}
+                        {p.description.slice(0, 24)}...
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -516,7 +538,10 @@ export function MatrixItemEditorDrawer({
             {/* Default Fee & Validity Days */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="matrix-item-fee" className="text-xs font-semibold">
+                <Label
+                  htmlFor="matrix-item-fee"
+                  className="text-xs font-semibold"
+                >
                   Default Fee (AED) <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
@@ -527,7 +552,9 @@ export function MatrixItemEditorDrawer({
                     min={0}
                     step={100}
                     value={defaultFee}
-                    onChange={(e) => setDefaultFee(Math.max(0, Number(e.target.value)))}
+                    onChange={(e) =>
+                      setDefaultFee(Math.max(0, Number(e.target.value)))
+                    }
                     disabled={!effectiveCanEdit || isSaving}
                     className="h-8 pl-8 text-xs font-mono"
                     required
@@ -536,8 +563,12 @@ export function MatrixItemEditorDrawer({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="matrix-item-validity" className="text-xs font-semibold">
-                  Validity Period (Days) <span className="text-destructive">*</span>
+                <Label
+                  htmlFor="matrix-item-validity"
+                  className="text-xs font-semibold"
+                >
+                  Validity Period (Days){' '}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -546,7 +577,9 @@ export function MatrixItemEditorDrawer({
                     type="number"
                     min={1}
                     value={validityDays}
-                    onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value)))}
+                    onChange={(e) =>
+                      setValidityDays(Math.max(1, Number(e.target.value)))
+                    }
                     disabled={!effectiveCanEdit || isSaving}
                     className="h-8 pl-8 text-xs font-mono"
                     required
@@ -564,8 +597,12 @@ export function MatrixItemEditorDrawer({
                     Statutory Requirements Checklist
                   </Label>
                 </div>
-                <Badge variant="secondary" className="font-mono text-[10px] h-5 px-1.5">
-                  {requirements.length} {requirements.length === 1 ? 'item' : 'items'}
+                <Badge
+                  variant="secondary"
+                  className="font-mono text-[10px] h-5 px-1.5"
+                >
+                  {requirements.length}{' '}
+                  {requirements.length === 1 ? 'item' : 'items'}
                 </Badge>
               </div>
 
@@ -599,7 +636,7 @@ export function MatrixItemEditorDrawer({
                             'px-1.5 py-0.5 rounded text-[10px] font-mono border transition cursor-pointer',
                             req.mandatory
                               ? 'bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-300'
-                              : 'bg-muted text-muted-foreground border-border'
+                              : 'bg-muted text-muted-foreground border-border',
                           )}
                           title="Toggle Mandatory / Optional"
                         >
@@ -657,15 +694,19 @@ export function MatrixItemEditorDrawer({
             {/* Mandatory Change Justification */}
             <div className="space-y-1.5 border-t border-border pt-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="matrix-item-change-summary" className="text-xs font-semibold">
-                  Reason for Template Change <span className="text-destructive">*</span>
+                <Label
+                  htmlFor="matrix-item-change-summary"
+                  className="text-xs font-semibold"
+                >
+                  Reason for Template Change{' '}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <span
                   className={cn(
                     'font-mono text-[10px]',
                     changeSummary.trim().length >= 5
                       ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-muted-foreground'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {changeSummary.trim().length}/5 min chars
@@ -681,7 +722,8 @@ export function MatrixItemEditorDrawer({
                 required
               />
               <p className="text-[11px] text-muted-foreground">
-                Required audit justification logged permanently with this template revision.
+                Required audit justification logged permanently with this
+                template revision.
               </p>
             </div>
 
@@ -694,9 +736,9 @@ export function MatrixItemEditorDrawer({
                     Automatic Project Propagation Notice
                   </p>
                   <p className="text-[11px] leading-relaxed text-sky-800/90 dark:text-sky-300/80">
-                    Saving will automatically propagate to unobtained NOCs (Not Started, Pending,
-                    Rejected) across all active projects under this Master Authority. Approved NOCs
-                    will NOT be modified.
+                    Saving will automatically propagate to unobtained NOCs (Not
+                    Started, Pending, Rejected) across all active projects under
+                    this Master Authority. Approved NOCs will NOT be modified.
                   </p>
                 </div>
               </div>
@@ -733,7 +775,9 @@ export function MatrixItemEditorDrawer({
                     <span>Saving...</span>
                   </>
                 ) : (
-                  <span>{item ? 'Save Blueprint & Propagate' : 'Create & Propagate'}</span>
+                  <span>
+                    {item ? 'Save Blueprint & Propagate' : 'Create & Propagate'}
+                  </span>
                 )}
               </Button>
             )}
@@ -742,4 +786,10 @@ export function MatrixItemEditorDrawer({
       </aside>
     </>
   );
+}
+
+export function MatrixItemEditorDrawer(props: MatrixItemEditorDrawerProps) {
+  const formKey = `${props.isOpen ? 'open' : 'closed'}-${props.item?.id ?? 'new'}`;
+
+  return <MatrixItemEditorDrawerForm key={formKey} {...props} />;
 }

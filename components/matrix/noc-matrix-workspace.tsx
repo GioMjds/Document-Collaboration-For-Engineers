@@ -26,11 +26,7 @@ import {
 } from '@/app/(app)/noc-matrix/actions';
 import { MatrixItemEditorDrawer } from './matrix-item-editor-drawer';
 import { MatrixRevisionDrawer } from './matrix-revision-drawer';
-import type {
-  NocMatrixItem,
-  NocMatrixRevision,
-  NocStage,
-} from '@/types/noc';
+import type { NocMatrixItem, NocMatrixRevision, NocStage } from '@/types/noc';
 
 export interface NocMatrixWorkspaceProps {
   initialAuthorityId: number;
@@ -41,8 +37,16 @@ export interface NocMatrixWorkspaceProps {
 
 const MASTER_AUTHORITIES = [
   { id: 1, name: 'Nakheel & Trakhees', jurisdiction: 'JAFZA & Coastal Zones' },
-  { id: 2, name: 'Dubai Municipality', jurisdiction: 'Mainland Dubai & Al Safat' },
-  { id: 3, name: 'Dubai Development Authority', jurisdiction: 'TECOM & Free Zones' },
+  {
+    id: 2,
+    name: 'Dubai Municipality',
+    jurisdiction: 'Mainland Dubai & Al Safat',
+  },
+  {
+    id: 3,
+    name: 'Dubai Development Authority',
+    jurisdiction: 'TECOM & Free Zones',
+  },
 ];
 
 const STAGES: NocStage[] = [
@@ -101,11 +105,16 @@ export function NocMatrixWorkspace({
   initialRevisions,
   currentUserRole,
 }: NocMatrixWorkspaceProps) {
-  const [selectedAuthorityId, setSelectedAuthorityId] = useState<number>(initialAuthorityId);
-  const [itemsCache, setItemsCache] = useState<Record<number, NocMatrixItem[]>>({
-    [initialAuthorityId]: initialItems,
-  });
-  const [revisionsCache, setRevisionsCache] = useState<Record<number, NocMatrixRevision[]>>({
+  const [selectedAuthorityId, setSelectedAuthorityId] =
+    useState<number>(initialAuthorityId);
+  const [itemsCache, setItemsCache] = useState<Record<number, NocMatrixItem[]>>(
+    {
+      [initialAuthorityId]: initialItems,
+    },
+  );
+  const [revisionsCache, setRevisionsCache] = useState<
+    Record<number, NocMatrixRevision[]>
+  >({
     [initialAuthorityId]: initialRevisions,
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -146,20 +155,28 @@ export function NocMatrixWorkspace({
         getMatrixRevisions(selectedAuthorityId),
       ]);
       if (itemsRes.ok && itemsRes.data) {
-        setItemsCache((prev) => ({ ...prev, [selectedAuthorityId]: itemsRes.data }));
+        setItemsCache((prev) => ({
+          ...prev,
+          [selectedAuthorityId]: itemsRes.data,
+        }));
       }
       if (revsRes.ok && revsRes.data) {
-        setRevisionsCache((prev) => ({ ...prev, [selectedAuthorityId]: revsRes.data }));
+        setRevisionsCache((prev) => ({
+          ...prev,
+          [selectedAuthorityId]: revsRes.data,
+        }));
       }
     });
   };
 
-  const currentAuthority = MASTER_AUTHORITIES.find((a) => a.id === selectedAuthorityId);
+  const currentAuthority = MASTER_AUTHORITIES.find(
+    (a) => a.id === selectedAuthorityId,
+  );
 
   const handleSaveSuccess = (
     savedItem: NocMatrixItem,
     projectsUpdated?: number,
-    nocsUpdated?: number
+    nocsUpdated?: number,
   ) => {
     // Optimistically update items cache.
     setItemsCache((prev) => {
@@ -167,13 +184,17 @@ export function NocMatrixWorkspace({
       const itemIndex = existingList.findIndex((i) => i.id === savedItem.id);
       let updatedList: NocMatrixItem[];
       if (itemIndex >= 0) {
-        updatedList = existingList.map((i) => (i.id === savedItem.id ? savedItem : i));
+        updatedList = existingList.map((i) =>
+          i.id === savedItem.id ? savedItem : i,
+        );
       } else {
         updatedList = [...existingList, savedItem];
       }
       return {
         ...prev,
-        [selectedAuthorityId]: updatedList.sort((a, b) => a.sequenceNo - b.sequenceNo),
+        [selectedAuthorityId]: updatedList.sort(
+          (a, b) => a.sequenceNo - b.sequenceNo,
+        ),
       };
     });
 
@@ -230,7 +251,8 @@ export function NocMatrixWorkspace({
             </h1>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Standard statutory approval frameworks, sequential prerequisites, and baseline fees across Dubai jurisdictions.
+            Standard statutory approval frameworks, sequential prerequisites,
+            and baseline fees across Dubai jurisdictions.
           </p>
         </div>
 
@@ -276,7 +298,8 @@ export function NocMatrixWorkspace({
         >
           <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="font-medium">
-            Read-Only View: Statutory blueprints are configured by Authority Engineers and Document Controllers.
+            Read-Only View: Statutory blueprints are configured by Authority
+            Engineers and Document Controllers.
           </p>
         </div>
       )}
@@ -305,7 +328,9 @@ export function NocMatrixWorkspace({
                   <Building2
                     className={cn(
                       'h-3.5 w-3.5',
-                      isActive ? 'text-(--site-cyan)' : 'text-muted-foreground group-hover:text-foreground',
+                      isActive
+                        ? 'text-(--site-cyan)'
+                        : 'text-muted-foreground group-hover:text-foreground',
                     )}
                   />
                   <span>{auth.name}</span>
@@ -364,7 +389,8 @@ export function NocMatrixWorkspace({
                         variant="secondary"
                         className="h-4.5 px-1.5 font-mono text-[10px] font-semibold"
                       >
-                        {stageItems.length} {stageItems.length === 1 ? 'NOC' : 'NOCs'}
+                        {stageItems.length}{' '}
+                        {stageItems.length === 1 ? 'NOC' : 'NOCs'}
                       </Badge>
                     </div>
                   </div>
@@ -377,7 +403,9 @@ export function NocMatrixWorkspace({
                     <div className="grid gap-2.5">
                       {stageItems.map((item) => {
                         const prereqItem = item.blockingSequenceNo
-                          ? currentItems.find((i) => i.sequenceNo === item.blockingSequenceNo)
+                          ? currentItems.find(
+                              (i) => i.sequenceNo === item.blockingSequenceNo,
+                            )
                           : null;
                         const reqCount = item.requirements?.length || 0;
 
@@ -400,7 +428,9 @@ export function NocMatrixWorkspace({
                                   <span
                                     className={cn(
                                       'inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-medium border font-mono',
-                                      getAuthorityBadgeStyle(item.reviewingAuthority),
+                                      getAuthorityBadgeStyle(
+                                        item.reviewingAuthority,
+                                      ),
                                     )}
                                   >
                                     {item.reviewingAuthority}
@@ -415,7 +445,10 @@ export function NocMatrixWorkspace({
                                   <span className="flex items-center gap-1 font-mono">
                                     <ListChecks className="h-3 w-3 text-muted-foreground" />
                                     <span>
-                                      {reqCount} statutory {reqCount === 1 ? 'requirement' : 'requirements'}
+                                      {reqCount} statutory{' '}
+                                      {reqCount === 1
+                                        ? 'requirement'
+                                        : 'requirements'}
                                     </span>
                                   </span>
                                 </div>
@@ -443,7 +476,9 @@ export function NocMatrixWorkspace({
                                   >
                                     <Lock className="h-3 w-3 shrink-0" />
                                     <span>
-                                      Requires #{prereqItem?.sequenceNo ?? item.blockingSequenceNo}{' '}
+                                      Requires #
+                                      {prereqItem?.sequenceNo ??
+                                        item.blockingSequenceNo}{' '}
                                       {prereqItem?.reviewingAuthority || ''}
                                     </span>
                                   </span>

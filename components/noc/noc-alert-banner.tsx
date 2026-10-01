@@ -87,7 +87,7 @@ export function NocAlertBanner({
             }
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
               activeFilter === 'pending-payment'
-                ? 'bg-[var(--site-navy)] text-white border-[var(--site-navy)] dark:bg-[var(--site-cyan)] dark:text-[#081220] dark:border-[var(--site-cyan)]'
+                ? 'bg-(--site-navy) text-white border-(--site-navy) dark:bg-(--site-cyan) dark:text-[#081220] dark:border-(--site-cyan)'
                 : 'bg-muted text-foreground border-border hover:bg-muted/80'
             }`}
           >

@@ -6,7 +6,6 @@ import {
   History,
   Building2,
   Calendar,
-  User,
   ShieldCheck,
   FileText,
 } from 'lucide-react';
@@ -102,7 +101,7 @@ export function MatrixRevisionDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Revision History & Audit Log"
-        className="fixed inset-y-0 right-0 z-40 w-full sm:w-[520px] bg-background border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
+        className="fixed inset-y-0 right-0 z-40 w-full sm:w-130 bg-background border-l border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
       >
         {/* Header */}
         <header className="p-4 border-b border-border bg-muted/40 shrink-0 flex items-center justify-between">
@@ -115,8 +114,12 @@ export function MatrixRevisionDrawer({
                 <h2 className="text-sm font-semibold text-foreground truncate">
                   Revision History & Audit Log
                 </h2>
-                <Badge variant="secondary" className="font-mono text-[10px] h-4.5 px-1.5">
-                  {revisions.length} {revisions.length === 1 ? 'event' : 'events'}
+                <Badge
+                  variant="secondary"
+                  className="font-mono text-[10px] h-4.5 px-1.5"
+                >
+                  {revisions.length}{' '}
+                  {revisions.length === 1 ? 'event' : 'events'}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground truncate">
@@ -144,8 +147,8 @@ export function MatrixRevisionDrawer({
                 No Template Revisions Recorded
               </h3>
               <p className="mt-1 text-xs text-muted-foreground max-w-xs">
-                Modifications, sequencing adjustments, and statutory additions for{' '}
-                {masterAuthorityName} will be automatically tracked here.
+                Modifications, sequencing adjustments, and statutory additions
+                for {masterAuthorityName} will be automatically tracked here.
               </p>
             </div>
           ) : (
@@ -159,10 +162,10 @@ export function MatrixRevisionDrawer({
                       rev.action === 'CREATE'
                         ? 'border-emerald-500 text-emerald-500'
                         : rev.action === 'UPDATE'
-                        ? 'border-blue-500 text-blue-500'
-                        : rev.action === 'DELETE'
-                        ? 'border-rose-500 text-rose-500'
-                        : 'border-purple-500 text-purple-500'
+                          ? 'border-blue-500 text-blue-500'
+                          : rev.action === 'DELETE'
+                            ? 'border-rose-500 text-rose-500'
+                            : 'border-purple-500 text-purple-500',
                     )}
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -176,7 +179,7 @@ export function MatrixRevisionDrawer({
                         <span
                           className={cn(
                             'inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-bold border',
-                            getActionBadgeStyle(rev.action)
+                            getActionBadgeStyle(rev.action),
                           )}
                         >
                           {rev.action}
@@ -216,8 +219,11 @@ export function MatrixRevisionDrawer({
                       <Building2 className="h-3 w-3 text-(--site-cyan) shrink-0" />
                       <span>
                         Propagated to {rev.propagatedProjectsCount} active{' '}
-                        {rev.propagatedProjectsCount === 1 ? 'project' : 'projects'} (
-                        {rev.propagatedNocsCount} {rev.propagatedNocsCount === 1 ? 'NOC' : 'NOCs'})
+                        {rev.propagatedProjectsCount === 1
+                          ? 'project'
+                          : 'projects'}{' '}
+                        ({rev.propagatedNocsCount}{' '}
+                        {rev.propagatedNocsCount === 1 ? 'NOC' : 'NOCs'})
                       </span>
                     </div>
                   </div>

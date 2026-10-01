@@ -9,29 +9,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DashboardKpiRibbon } from './dashboard-kpi-ribbon';
 import { ProjectDisciplineCard } from './project-discipline-card';
 import { SubmittalDelayTable } from './submittal-delay-table';
+import { StageGateDrawer } from '@/components/lifecycle/stage-gate-drawer';
 import type {
   AssignedProject,
   ProjectNocItem,
   ProjectDisciplineStatus,
   DisciplineStageStatus,
   ThirdPartySpecialistType,
+  ProjectLifecycleStage,
+  StageMilestoneDates,
 } from '@/types/noc';
 import {
   INITIAL_PROJECT_DISCIPLINE_STATUS,
   calculateSubmittalDelays,
 } from '@/lib/project-status';
-import { isExpiringSoon } from '@/lib/noc-tracker';
 import {
-  Layers,
-  AlertTriangle,
-  UserCheck,
-  ShieldCheck,
-  Building,
-} from 'lucide-react';
+  evaluateStageGateReadiness,
+  INITIAL_PROJECT_MILESTONES,
+} from '@/lib/project-lifecycle';
+import { isExpiringSoon } from '@/lib/noc-tracker';
+import { Layers, AlertTriangle, UserCheck, Building } from 'lucide-react';
 
 interface ExecutiveDashboardClientProps {
   projects: AssignedProject[];
@@ -39,6 +39,8 @@ interface ExecutiveDashboardClientProps {
   currentUserRole: string;
 }
 
+// This is a temporary role simulation for testing purposes.
+// In a real application, the currentUserRole would be determined by authentication and authorization logic.
 const AVAILABLE_ROLES = [
   { value: 'admin', label: 'Admin (Full Access)' },
   { value: 'ceo', label: 'CEO (Read Only Portfolio)' },
@@ -49,7 +51,10 @@ const AVAILABLE_ROLES = [
   { value: 'authority_engineer', label: 'Authority Engineer (Engr. Rasha)' },
   { value: 'resident_engineer', label: 'Resident Engineer (Engr. Abdel)' },
   { value: 'dc', label: 'Document Controller (Ms. Jalilah)' },
-  { value: 'doc_controller', label: 'Document Controller (Legacy doc_controller)' },
+  {
+    value: 'doc_controller',
+    label: 'Document Controller (Legacy doc_controller)',
+  },
 ];
 
 export function ExecutiveDashboardClient({
@@ -57,10 +62,25 @@ export function ExecutiveDashboardClient({
   initialNocs,
   currentUserRole,
 }: ExecutiveDashboardClientProps) {
-  const [currentRole, setCurrentRole] = useState<string>(currentUserRole || 'admin');
-  const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'disciplines' | 'delays'>('disciplines');
-  const [kpiFilter, setKpiFilter] = useState<'all' | 'delayed' | 'expiring'>('all');
+  const [projectList, setProjectList] = useState<AssignedProject[]>(projects);
+  const [milestonesMap, setMilestonesMap] = useState<
+    Record<string, StageMilestoneDates>
+  >(INITIAL_PROJECT_MILESTONES);
+  const [gateDrawerProjectCode, setGateDrawerProjectCode] = useState<
+    string | null
+  >(null);
+
+  const [currentRole, setCurrentRole] = useState<string>(
+    currentUserRole || 'admin',
+  );
+  const [selectedProjectFilter, setSelectedProjectFilter] =
+    useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'disciplines' | 'delays'>(
+    'disciplines',
+  );
+  const [kpiFilter, setKpiFilter] = useState<'all' | 'delayed' | 'expiring'>(
+    'all',
+  );
 
   const [disciplineStatuses, setDisciplineStatuses] = useState<
     Record<string, ProjectDisciplineStatus>
@@ -70,19 +90,23 @@ export function ExecutiveDashboardClient({
 
   const isExecutiveRole = useMemo(() => {
     const r = currentRole.toLowerCase();
-    return r === 'admin' || r === 'ceo' || r === 'area_manager' || r === 'manager';
+    return (
+      r === 'admin' || r === 'ceo' || r === 'area_manager' || r === 'manager'
+    );
   }, [currentRole]);
 
   const visibleProjects = useMemo(() => {
     if (isExecutiveRole) {
-      return projects;
+      return projectList;
     }
     // Discipline engineers and DC see assigned projects
-    return projects.filter((p) => {
+    return projectList.filter((p) => {
       const assigned = Object.values(p.assignedRoles);
       return (
-        assigned.some((name) =>
-          currentRole.includes('architect') && name.includes('Abram') || name.includes('Adel')
+        assigned.some(
+          (name) =>
+            (currentRole.includes('architect') && name.includes('Abram')) ||
+            name.includes('Adel'),
         ) ||
         currentRole.includes('structure') ||
         currentRole.includes('mep') ||
@@ -93,7 +117,7 @@ export function ExecutiveDashboardClient({
         currentRole.includes('engineer')
       );
     });
-  }, [projects, isExecutiveRole, currentRole]);
+  }, [projectList, isExecutiveRole, currentRole]);
 
   const filteredProjects = useMemo(() => {
     if (selectedProjectFilter === 'all') {
@@ -108,8 +132,8 @@ export function ExecutiveDashboardClient({
   }, [nocItems, visibleProjects]);
 
   const delayItems = useMemo(() => {
-    return calculateSubmittalDelays(filteredNocs, projects);
-  }, [filteredNocs, projects]);
+    return calculateSubmittalDelays(filteredNocs, projectList);
+  }, [filteredNocs, projectList]);
 
   const expiringNocs = useMemo(() => {
     return filteredNocs.filter(
@@ -146,7 +170,8 @@ export function ExecutiveDashboardClient({
           [discipline]: {
             ...current[discipline],
             status: newStatus,
-            remarks: remarks !== undefined ? remarks : current[discipline].remarks,
+            remarks:
+              remarks !== undefined ? remarks : current[discipline].remarks,
             updatedAt: new Date().toISOString(),
           },
         },
@@ -243,6 +268,57 @@ export function ExecutiveDashboardClient({
     }
   };
 
+  const stageDistribution = useMemo(() => {
+    const dist: Record<string, number> = {};
+    visibleProjects.forEach((p) => {
+      const stage = p.lifecycleStage || 'Design';
+      dist[stage] = (dist[stage] || 0) + 1;
+    });
+    return dist;
+  }, [visibleProjects]);
+
+  const handleAdvanceProjectStage = (
+    projectCode: string,
+    newStage: ProjectLifecycleStage,
+  ) => {
+    setProjectList((prev) =>
+      prev.map((p) =>
+        p.code === projectCode
+          ? {
+              ...p,
+              lifecycleStage: newStage,
+              currentStage: `${newStage} Stage`,
+            }
+          : p,
+      ),
+    );
+  };
+
+  const handleUpdateProjectMilestones = (
+    projectCode: string,
+    updatedMilestones: StageMilestoneDates,
+  ) => {
+    setMilestonesMap((prev) => ({
+      ...prev,
+      [projectCode]: updatedMilestones,
+    }));
+    setProjectList((prev) =>
+      prev.map((p) =>
+        p.code === projectCode ? { ...p, milestones: updatedMilestones } : p,
+      ),
+    );
+  };
+
+  const selectedDrawerProject = useMemo(() => {
+    if (!gateDrawerProjectCode) return null;
+    const found = projectList.find((p) => p.code === gateDrawerProjectCode);
+    if (!found) return null;
+    return {
+      ...found,
+      milestones: milestonesMap[found.code] || found.milestones,
+    };
+  }, [projectList, gateDrawerProjectCode, milestonesMap]);
+
   return (
     <div className="space-y-6">
       {/* Top Command Header & Role Simulation Bar */}
@@ -257,7 +333,8 @@ export function ExecutiveDashboardClient({
             </Badge>
           </div>
           <p className="text-xs text-slate-500">
-            Portfolio oversight, discipline transmittal statuses, submittal delays, and 14-day expiry alerts.
+            Portfolio oversight, discipline transmittal statuses, submittal
+            delays, and 14-day expiry alerts.
           </p>
         </div>
 
@@ -271,11 +348,13 @@ export function ExecutiveDashboardClient({
                 if (val) setSelectedProjectFilter(val);
               }}
             >
-              <SelectTrigger className="w-[180px] h-8 text-xs">
+              <SelectTrigger className="w-45 h-8 text-xs">
                 <SelectValue placeholder="All Projects" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Visible Projects ({visibleProjects.length})</SelectItem>
+                <SelectItem value="all">
+                  All Visible Projects ({visibleProjects.length})
+                </SelectItem>
                 {visibleProjects.map((p) => (
                   <SelectItem key={p.code} value={p.code}>
                     #{p.code} - {p.name.substring(0, 18)}...
@@ -288,14 +367,16 @@ export function ExecutiveDashboardClient({
           {/* Interactive Role Switcher for Testing */}
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 dark:border-slate-800 dark:bg-slate-800">
             <UserCheck className="h-3.5 w-3.5 text-blue-600" />
-            <span className="text-[11px] font-medium text-slate-500">Role Preview:</span>
+            <span className="text-[11px] font-medium text-slate-500">
+              Role Preview:
+            </span>
             <Select
               value={currentRole}
               onValueChange={(val) => {
                 if (val) setCurrentRole(val);
               }}
             >
-              <SelectTrigger className="w-[190px] h-7 border-0 bg-transparent text-xs font-semibold focus:ring-0">
+              <SelectTrigger className="w-47.5 h-7 border-0 bg-transparent text-xs font-semibold focus:ring-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -319,6 +400,7 @@ export function ExecutiveDashboardClient({
         clearanceRate={clearanceRate}
         activeFilter={kpiFilter}
         onSelectFilter={handleKpiSelect}
+        stageDistribution={stageDistribution}
       />
 
       {/* View Selector Tabs */}
@@ -395,12 +477,27 @@ export function ExecutiveDashboardClient({
                 specialists: [],
               };
 
+              const projectWithMilestones: AssignedProject = {
+                ...project,
+                milestones: milestonesMap[project.code] || project.milestones,
+              };
+              const readiness = evaluateStageGateReadiness(
+                projectWithMilestones,
+                nocItems,
+                disciplineStatuses[project.code],
+              );
+
               return (
                 <ProjectDisciplineCard
                   key={project.code}
-                  project={project}
+                  project={projectWithMilestones}
                   statusRecord={statusRecord}
                   userRole={currentRole}
+                  readiness={readiness}
+                  milestones={milestonesMap[project.code]}
+                  onOpenGateDetails={() =>
+                    setGateDrawerProjectCode(project.code)
+                  }
                   onUpdateDiscipline={handleUpdateDiscipline}
                   onUpdateAuthorityStage={handleUpdateAuthorityStage}
                   onUploadSpecialistFile={handleUploadSpecialistFile}
@@ -417,6 +514,27 @@ export function ExecutiveDashboardClient({
         <SubmittalDelayTable
           delayItems={delayItems}
           expiringNocs={expiringNocs}
+        />
+      )}
+
+      {/* Stage Gate Readiness Slide-Over Drawer */}
+      {selectedDrawerProject && (
+        <StageGateDrawer
+          project={selectedDrawerProject}
+          readiness={evaluateStageGateReadiness(
+            selectedDrawerProject,
+            nocItems,
+            disciplineStatuses[selectedDrawerProject.code],
+          )}
+          currentUserRole={currentRole}
+          isOpen={Boolean(gateDrawerProjectCode)}
+          onClose={() => setGateDrawerProjectCode(null)}
+          onAdvanceStage={(newStage) =>
+            handleAdvanceProjectStage(selectedDrawerProject.code, newStage)
+          }
+          onUpdateMilestones={(m) =>
+            handleUpdateProjectMilestones(selectedDrawerProject.code, m)
+          }
         />
       )}
     </div>

@@ -9,6 +9,7 @@ export const SEED_PROJECTS: AssignedProject[] = [
     location: 'Palm Jumeirah, Frond N',
     contractType: 'Design & Supervision',
     currentStage: 'Design',
+    lifecycleStage: 'Design',
     assignedRoles: {
       authorityEngineer: 'Engr. Rasha',
       architectEngineer: 'Engr. Adel',
@@ -28,6 +29,7 @@ export const SEED_PROJECTS: AssignedProject[] = [
     location: 'Al Kifaf, Dubai',
     contractType: 'Supervision',
     currentStage: 'Construction(supervision)',
+    lifecycleStage: 'Construction',
     assignedRoles: {
       authorityEngineer: 'Engr. Rasha',
       architectEngineer: 'Engr. Abram',

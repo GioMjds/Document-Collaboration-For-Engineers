@@ -13,11 +13,20 @@ import {
 import { NocAlertBanner } from './noc-alert-banner';
 import { NocDataTable } from './noc-data-table';
 import { NocInspectorDrawer } from './noc-inspector-drawer';
+import { ProjectLifecycleStepper } from '@/components/lifecycle/project-lifecycle-stepper';
+import { StageGateDrawer } from '@/components/lifecycle/stage-gate-drawer';
+import {
+  evaluateStageGateReadiness,
+  INITIAL_PROJECT_MILESTONES,
+} from '@/lib/project-lifecycle';
+import { INITIAL_PROJECT_DISCIPLINE_STATUS } from '@/lib/project-status';
 import type {
   AssignedProject,
   ProjectNocItem,
   NocStage,
   ReviewingAuthority,
+  ProjectLifecycleStage,
+  StageMilestoneDates,
 } from '@/types/noc';
 import { isExpiringSoon } from '@/lib/noc-tracker';
 
@@ -39,6 +48,10 @@ export function NocTrackerClient({
   initialNocs,
   currentUserRole,
 }: NocTrackerClientProps) {
+  const [projectList, setProjectList] = useState<AssignedProject[]>(projects);
+  const [milestonesMap, setMilestonesMap] =
+    useState<Record<string, StageMilestoneDates>>(INITIAL_PROJECT_MILESTONES);
+  const [isGateDrawerOpen, setIsGateDrawerOpen] = useState(false);
   const [selectedProjectCode, setSelectedProjectCode] = useState<string>(
     projects[0]?.code || '23016',
   );
@@ -49,10 +62,34 @@ export function NocTrackerClient({
   const [urgentFilter, setUrgentFilter] = useState<string | null>(null);
   const [selectedNoc, setSelectedNoc] = useState<ProjectNocItem | null>(null);
 
-  const currentProject = useMemo(
-    () => projects.find((p) => p.code === selectedProjectCode) || projects[0],
-    [projects, selectedProjectCode],
-  );
+  const currentProject = useMemo(() => {
+    const proj =
+      projectList.find((p) => p.code === selectedProjectCode) || projectList[0];
+    if (!proj) return proj;
+    return {
+      ...proj,
+      milestones: milestonesMap[proj.code] || proj.milestones,
+    };
+  }, [projectList, selectedProjectCode, milestonesMap]);
+
+  const currentGateReadiness = useMemo(() => {
+    if (!currentProject) {
+      return {
+        stage: 'Design' as ProjectLifecycleStage,
+        nextStage: 'Construction' as ProjectLifecycleStage,
+        totalPrerequisites: 0,
+        satisfiedPrerequisites: 0,
+        readinessPercentage: 0,
+        isGateReady: false,
+        prerequisites: [],
+      };
+    }
+    return evaluateStageGateReadiness(
+      currentProject,
+      nocItems,
+      INITIAL_PROJECT_DISCIPLINE_STATUS[currentProject.code],
+    );
+  }, [currentProject, nocItems]);
 
   const projectNocs = useMemo(
     () => nocItems.filter((i) => i.projectCode === selectedProjectCode),
@@ -107,6 +144,35 @@ export function NocTrackerClient({
     if (selectedNoc?.id === updated.id) {
       setSelectedNoc(updated);
     }
+  }
+
+  // Advance project lifecycle stage and close gate drawer.
+  function handleAdvanceStage(newStage: ProjectLifecycleStage) {
+    if (!currentProject) return;
+    setProjectList((prev) =>
+      prev.map((p) =>
+        p.code === currentProject.code
+          ? { ...p, lifecycleStage: newStage }
+          : p,
+      ),
+    );
+    setIsGateDrawerOpen(false);
+  }
+
+  // Update regulatory milestone dates for current project.
+  function handleUpdateMilestones(updatedMilestones: StageMilestoneDates) {
+    if (!currentProject) return;
+    setMilestonesMap((prev) => ({
+      ...prev,
+      [currentProject.code]: updatedMilestones,
+    }));
+    setProjectList((prev) =>
+      prev.map((p) =>
+        p.code === currentProject.code
+          ? { ...p, milestones: updatedMilestones }
+          : p,
+      ),
+    );
   }
 
   const distinctAuthorities = useMemo(() => {
@@ -170,7 +236,7 @@ export function NocTrackerClient({
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectList.map((p) => (
                   <SelectItem
                     key={p.code}
                     value={p.code}
@@ -236,6 +302,16 @@ export function NocTrackerClient({
           </span>
         </div>
       </section>
+
+      {/* Project lifecycle stepper ribbon. */}
+      {currentProject && (
+        <ProjectLifecycleStepper
+          currentStage={currentProject.lifecycleStage || 'Design'}
+          readiness={currentGateReadiness}
+          milestones={currentProject.milestones}
+          onOpenGateDetails={() => setIsGateDrawerOpen(true)}
+        />
+      )}
 
       {/* Urgent Action Alert Ribbon */}
       <NocAlertBanner
@@ -356,6 +432,19 @@ export function NocTrackerClient({
         onClose={() => setSelectedNoc(null)}
         onUpdateNoc={handleUpdateNoc}
       />
+
+      {/* Stage gate verification and readiness drawer. */}
+      {currentProject && (
+        <StageGateDrawer
+          project={currentProject}
+          readiness={currentGateReadiness}
+          currentUserRole={currentUserRole}
+          isOpen={isGateDrawerOpen}
+          onClose={() => setIsGateDrawerOpen(false)}
+          onAdvanceStage={handleAdvanceStage}
+          onUpdateMilestones={handleUpdateMilestones}
+        />
+      )}
     </div>
   );
 }

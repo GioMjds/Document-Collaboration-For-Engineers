@@ -1,3 +1,4 @@
+import { ProjectLifecycleStage, StageMilestoneDates } from "@/types/noc";
 
 export function formatSize(bytes: number | null) {
   if (!bytes) return '-';
@@ -5,4 +6,59 @@ export function formatSize(bytes: number | null) {
   return mb >= 1
     ? `${mb.toFixed(1)} MB`
     : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+// Format dates as DD Mon YYYY for engineering documentation.
+export function formatMilestoneDate(dateStr?: string): string | null {
+  if (!dateStr) return null;
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const date = new Date(year, month, day);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  }
+  return dateStr;
+}
+
+// Resolve primary milestone target date for a given lifecycle stage.
+export function getStageMilestoneDate(
+  stage: ProjectLifecycleStage,
+  milestones?: StageMilestoneDates,
+): string | undefined {
+  if (!milestones) return undefined;
+  switch (stage) {
+    case 'Feasibility':
+      return (
+        milestones.feasibility?.conceptApprovalDate ||
+        milestones.feasibility?.surveyCompletionDate ||
+        milestones.feasibility?.kickoffDate
+      );
+    case 'Design':
+      return (
+        milestones.design?.buildingPermitDate ||
+        milestones.design?.plannedCompletionDate ||
+        milestones.design?.commencementDate
+      );
+    case 'Construction':
+      return (
+        milestones.construction?.targetCompletionDate ||
+        milestones.construction?.commencementDate
+      );
+    case 'Handover':
+      return (
+        milestones.handover?.bccIssuanceDate ||
+        milestones.handover?.civilDefenceInspectionDate ||
+        milestones.handover?.commissioningDate ||
+        (milestones.handover as Record<string, string | undefined>)
+          ?.targetCompletionDate
+      );
+  }
 }

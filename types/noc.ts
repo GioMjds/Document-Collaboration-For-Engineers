@@ -1,8 +1,58 @@
+export type ProjectLifecycleStage =
+  | 'Feasibility'
+  | 'Design'
+  | 'Construction'
+  | 'Handover';
+
+export interface StageMilestoneDates {
+  feasibility?: {
+    kickoffDate?: string;
+    surveyCompletionDate?: string;
+    conceptApprovalDate?: string;
+  };
+  design?: {
+    commencementDate?: string;
+    plannedCompletionDate?: string;
+    buildingPermitDate?: string;
+  };
+  construction?: {
+    commencementDate?: string;
+    targetCompletionDate?: string;
+    extensionOfTimeDate?: string;
+  };
+  handover?: {
+    commissioningDate?: string;
+    civilDefenceInspectionDate?: string;
+    bccIssuanceDate?: string;
+  };
+}
+
+export interface StageGatePrerequisiteItem {
+  id: string;
+  title: string;
+  category: 'authority_noc' | 'specialist_study' | 'regulatory_milestone';
+  isSatisfied: boolean;
+  sourceReference?: string;
+  mandatoryForNextStage: boolean;
+}
+
+export interface StageGateReadiness {
+  stage: ProjectLifecycleStage;
+  nextStage: ProjectLifecycleStage | 'Completed';
+  totalPrerequisites: number;
+  satisfiedPrerequisites: number;
+  readinessPercentage: number;
+  isGateReady: boolean;
+  prerequisites: StageGatePrerequisiteItem[];
+}
+
+// This is hardcoded for now, but we can make it dynamic in the future if needed.
 export type MasterAuthority =
   | 'Nakheel and Trakhees'
   | 'Dubai Municipality'
   | 'Dubai Development Authority';
 
+// This is hardcoded for now, but we can make it dynamic in the future if needed.
 export type ReviewingAuthority =
   | 'Trakhees'
   | 'Nakheel'
@@ -79,6 +129,8 @@ export interface AssignedProject {
   location: string;
   contractType: string;
   currentStage: string;
+  lifecycleStage: ProjectLifecycleStage;
+  milestones?: StageMilestoneDates;
   assignedRoles: {
     authorityEngineer: string;
     architectEngineer: string;

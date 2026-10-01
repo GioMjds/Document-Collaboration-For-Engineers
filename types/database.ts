@@ -89,6 +89,93 @@ export type Database = {
           },
         ]
       }
+      master_authorities: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: never
+          name: string
+        }
+        Update: {
+          id?: never
+          name?: string
+        }
+        Relationships: []
+      }
+      noc_matrix_items: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string
+          id: string
+          master_authority_id: number
+          reviewing_authority_id: number
+          sequence_no: number
+          stage: Database["public"]["Enums"]["noc_stage"]
+          submitted_by: Database["public"]["Enums"]["noc_submitter"]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description: string
+          id?: string
+          master_authority_id: number
+          reviewing_authority_id: number
+          sequence_no: number
+          stage: Database["public"]["Enums"]["noc_stage"]
+          submitted_by?: Database["public"]["Enums"]["noc_submitter"]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          master_authority_id?: number
+          reviewing_authority_id?: number
+          sequence_no?: number
+          stage?: Database["public"]["Enums"]["noc_stage"]
+          submitted_by?: Database["public"]["Enums"]["noc_submitter"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "noc_matrix_items_master_authority_id_fkey"
+            columns: ["master_authority_id"]
+            isOneToOne: false
+            referencedRelation: "master_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "noc_matrix_items_reviewing_authority_id_fkey"
+            columns: ["reviewing_authority_id"]
+            isOneToOne: false
+            referencedRelation: "reviewing_authorities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      noc_statuses: {
+        Row: {
+          code: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active: boolean
@@ -97,9 +184,7 @@ export type Database = {
           full_name: string
           id: string
           office: Database["public"]["Enums"]["office_site"] | null
-          role:
-            | Database["public"]["Enums"]["app_role"]
-            | Database["public"]["Enums"]["user_role"]
+          role: Database["public"]["Enums"]["app_role"]
         }
         Insert: {
           active?: boolean
@@ -108,9 +193,7 @@ export type Database = {
           full_name?: string
           id: string
           office?: Database["public"]["Enums"]["office_site"] | null
-          role?:
-            | Database["public"]["Enums"]["app_role"]
-            | Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["app_role"]
         }
         Update: {
           active?: boolean
@@ -119,9 +202,236 @@ export type Database = {
           full_name?: string
           id?: string
           office?: Database["public"]["Enums"]["office_site"] | null
-          role?:
-            | Database["public"]["Enums"]["app_role"]
-            | Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      project_code_counters: {
+        Row: {
+          last_seq: number
+          year: number
+        }
+        Insert: {
+          last_seq?: number
+          year: number
+        }
+        Update: {
+          last_seq?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      project_members: {
+        Row: {
+          assigned_at: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_nocs: {
+        Row: {
+          apply_date: string | null
+          created_at: string
+          description: string
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          matrix_item_id: string | null
+          plan_date: string | null
+          project_id: string
+          receive_date: string | null
+          reference_no: string | null
+          remarks: string | null
+          reviewing_authority_id: number
+          sequence_no: number
+          stage: Database["public"]["Enums"]["noc_stage"]
+          status_code: string
+          submitted_by: Database["public"]["Enums"]["noc_submitter"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          apply_date?: string | null
+          created_at?: string
+          description: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          matrix_item_id?: string | null
+          plan_date?: string | null
+          project_id: string
+          receive_date?: string | null
+          reference_no?: string | null
+          remarks?: string | null
+          reviewing_authority_id: number
+          sequence_no?: number
+          stage: Database["public"]["Enums"]["noc_stage"]
+          status_code?: string
+          submitted_by?: Database["public"]["Enums"]["noc_submitter"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          apply_date?: string | null
+          created_at?: string
+          description?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          matrix_item_id?: string | null
+          plan_date?: string | null
+          project_id?: string
+          receive_date?: string | null
+          reference_no?: string | null
+          remarks?: string | null
+          reviewing_authority_id?: number
+          sequence_no?: number
+          stage?: Database["public"]["Enums"]["noc_stage"]
+          status_code?: string
+          submitted_by?: Database["public"]["Enums"]["noc_submitter"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_nocs_matrix_item_id_fkey"
+            columns: ["matrix_item_id"]
+            isOneToOne: false
+            referencedRelation: "noc_matrix_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_reviewing_authority_id_fkey"
+            columns: ["reviewing_authority_id"]
+            isOneToOne: false
+            referencedRelation: "reviewing_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_status_code_fkey"
+            columns: ["status_code"]
+            isOneToOne: false
+            referencedRelation: "noc_statuses"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "project_nocs_status_code_fkey"
+            columns: ["status_code"]
+            isOneToOne: false
+            referencedRelation: "v_project_nocs"
+            referencedColumns: ["effective_status"]
+          },
+          {
+            foreignKeyName: "project_nocs_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          archived_at: string | null
+          client_name: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          image_path: string | null
+          master_authority_id: number
+          stage: Database["public"]["Enums"]["project_stage"]
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          client_name?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          image_path?: string | null
+          master_authority_id: number
+          stage?: Database["public"]["Enums"]["project_stage"]
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          client_name?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          image_path?: string | null
+          master_authority_id?: number
+          stage?: Database["public"]["Enums"]["project_stage"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_master_authority_id_fkey"
+            columns: ["master_authority_id"]
+            isOneToOne: false
+            referencedRelation: "master_authorities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviewing_authorities: {
+        Row: {
+          id: number
+          name: string
+        }
+        Insert: {
+          id?: never
+          name: string
+        }
+        Update: {
+          id?: never
+          name?: string
         }
         Relationships: []
       }
@@ -169,14 +479,90 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_extension_status: {
+        Row: {
+          comment: string | null
+          default_version: string | null
+          default_version_schema: unknown
+          installed_version: string | null
+          name: unknown
+          schema: unknown
+        }
+        Relationships: []
+      }
+      v_project_nocs: {
+        Row: {
+          apply_date: string | null
+          created_at: string | null
+          days_to_expiry: number | null
+          description: string | null
+          effective_label: string | null
+          effective_status: string | null
+          expiry_date: string | null
+          file_url: string | null
+          id: string | null
+          matrix_item_id: string | null
+          plan_date: string | null
+          project_id: string | null
+          receive_date: string | null
+          reference_no: string | null
+          remarks: string | null
+          reviewing_authority_id: number | null
+          sequence_no: number | null
+          stage: Database["public"]["Enums"]["noc_stage"] | null
+          status_code: string | null
+          submitted_by: Database["public"]["Enums"]["noc_submitter"] | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_nocs_matrix_item_id_fkey"
+            columns: ["matrix_item_id"]
+            isOneToOne: false
+            referencedRelation: "noc_matrix_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_reviewing_authority_id_fkey"
+            columns: ["reviewing_authority_id"]
+            isOneToOne: false
+            referencedRelation: "reviewing_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_status_code_fkey"
+            columns: ["status_code"]
+            isOneToOne: false
+            referencedRelation: "noc_statuses"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "project_nocs_status_code_fkey"
+            columns: ["status_code"]
+            isOneToOne: false
+            referencedRelation: "v_project_nocs"
+            referencedColumns: ["effective_status"]
+          },
+          {
+            foreignKeyName: "project_nocs_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      current_role_name: {
-        Args: never
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
-      doc_number_taken: { Args: { p_doc_number: string }; Returns: boolean }
+      next_project_code: { Args: never; Returns: string }
     }
     Enums: {
       app_role:
@@ -187,10 +573,17 @@ export type Database = {
         | "resident_engineer"
         | "area_manager"
         | "ceo"
-      office_site: "head_office" | "site_office"
       doc_status: "draft" | "submitted" | "approved" | "rejected" | "archived"
+      noc_stage: "design" | "information" | "construction" | "handover"
+      noc_submitter: "consultant" | "client" | "contractor" | "specialist"
+      office_site: "head_office" | "site_office"
+      project_stage:
+        | "planning"
+        | "design"
+        | "construction"
+        | "handover"
+        | "completed"
       review_decision: "approved" | "rejected"
-      user_role: "engineer" | "manager" | "doc_controller"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -327,10 +720,18 @@ export const Constants = {
         "area_manager",
         "ceo",
       ],
-      office_site: ["head_office", "site_office"],
       doc_status: ["draft", "submitted", "approved", "rejected", "archived"],
+      noc_stage: ["design", "information", "construction", "handover"],
+      noc_submitter: ["consultant", "client", "contractor", "specialist"],
+      office_site: ["head_office", "site_office"],
+      project_stage: [
+        "planning",
+        "design",
+        "construction",
+        "handover",
+        "completed",
+      ],
       review_decision: ["approved", "rejected"],
-      user_role: ["engineer", "manager", "doc_controller"],
     },
   },
 } as const

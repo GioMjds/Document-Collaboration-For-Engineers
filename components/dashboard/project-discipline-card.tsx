@@ -7,25 +7,29 @@ import { Button } from '@/components/ui/button';
 import { DisciplineStatusBadge } from './discipline-status-badge';
 import { AuthoritiesStageRow } from './authorities-stage-row';
 import { ThirdPartySpecialistDrawer } from './third-party-specialist-drawer';
+import { ProjectLifecycleStepper } from '@/components/lifecycle/project-lifecycle-stepper';
 import type {
   AssignedProject,
   ProjectDisciplineStatus,
   DisciplineStageStatus,
   ThirdPartySpecialistType,
+  StageGateReadiness,
+  StageMilestoneDates,
 } from '@/types/noc';
 import {
-  Building2,
   MapPin,
   FileCheck2,
   Paperclip,
   ArrowRight,
-  ShieldAlert,
 } from 'lucide-react';
 
 interface ProjectDisciplineCardProps {
   project: AssignedProject;
   statusRecord: ProjectDisciplineStatus;
   userRole: string;
+  readiness?: StageGateReadiness;
+  milestones?: StageMilestoneDates;
+  onOpenGateDetails?: () => void;
   onUpdateDiscipline: (
     projectCode: string,
     discipline: 'architecture' | 'structure' | 'mep',
@@ -53,6 +57,9 @@ export function ProjectDisciplineCard({
   project,
   statusRecord,
   userRole,
+  readiness,
+  milestones,
+  onOpenGateDetails,
   onUpdateDiscipline,
   onUpdateAuthorityStage,
   onUploadSpecialistFile,
@@ -90,7 +97,10 @@ export function ProjectDisciplineCard({
             </h3>
             <p className="flex items-center gap-1 text-xs text-slate-500">
               <MapPin className="h-3 w-3" />
-              {project.location} • Stage: <span className="font-medium text-slate-700 dark:text-slate-300">{project.currentStage}</span>
+              {project.location} • Stage:{' '}
+              <span className="font-medium text-slate-700 dark:text-slate-300">
+                {project.currentStage}
+              </span>
             </p>
           </div>
 
@@ -102,6 +112,16 @@ export function ProjectDisciplineCard({
             </Button>
           </Link>
         </div>
+
+        {/* Project Lifecycle Stepper */}
+        {readiness && (
+          <ProjectLifecycleStepper
+            currentStage={readiness.stage}
+            readiness={readiness}
+            milestones={milestones}
+            onOpenGateDetails={onOpenGateDetails}
+          />
+        )}
 
         {/* Section 5: Current Status of Disciplines */}
         <div className="space-y-1.5">
@@ -115,7 +135,12 @@ export function ProjectDisciplineCard({
               detail={statusRecord.architecture}
               userRole={userRole}
               onUpdate={(newStatus, remarks) =>
-                onUpdateDiscipline(project.code, 'architecture', newStatus, remarks)
+                onUpdateDiscipline(
+                  project.code,
+                  'architecture',
+                  newStatus,
+                  remarks,
+                )
               }
             />
             <DisciplineStatusBadge
@@ -124,7 +149,12 @@ export function ProjectDisciplineCard({
               detail={statusRecord.structure}
               userRole={userRole}
               onUpdate={(newStatus, remarks) =>
-                onUpdateDiscipline(project.code, 'structure', newStatus, remarks)
+                onUpdateDiscipline(
+                  project.code,
+                  'structure',
+                  newStatus,
+                  remarks,
+                )
               }
             />
             <DisciplineStatusBadge
@@ -161,11 +191,17 @@ export function ProjectDisciplineCard({
               Specialist Studies:
             </span>
             <div className="flex items-center gap-1.5">
-              <Badge variant="outline" className="text-[11px] text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40">
+              <Badge
+                variant="outline"
+                className="text-[11px] text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40"
+              >
                 {approvedSpecialistsCount} Approved
               </Badge>
               {uploadedSpecialistsCount > 0 && (
-                <Badge variant="outline" className="text-[11px] text-sky-700 bg-sky-50 dark:bg-sky-950/40">
+                <Badge
+                  variant="outline"
+                  className="text-[11px] text-sky-700 bg-sky-50 dark:bg-sky-950/40"
+                >
                   {uploadedSpecialistsCount} In Review
                 </Badge>
               )}

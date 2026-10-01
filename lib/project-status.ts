@@ -5,7 +5,10 @@ import type {
   SubmittalDelayItem,
 } from '@/types/noc';
 
-export const INITIAL_PROJECT_DISCIPLINE_STATUS = {
+export const INITIAL_PROJECT_DISCIPLINE_STATUS: Record<
+  string,
+  ProjectDisciplineStatus
+> = {
   '23016': {
     projectCode: '23016',
     architecture: {

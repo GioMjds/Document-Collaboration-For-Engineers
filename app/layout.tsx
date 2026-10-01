@@ -16,14 +16,14 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Engineer Document Collaboration',
+  title: 'CVTEC Engineer CMS',
   description: 'Collaborative document management and review application.',
-  applicationName: 'Engineer Document Collaboration',
+  applicationName: 'CVTEC Engineer CMS',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Engineer Document Collaboration',
+    title: 'CVTEC Engineer CMS',
   },
   // Add more metadata properties as needed
 };
@@ -39,7 +39,7 @@ export const viewport: Viewport = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Engineer Document Collaboration',
+  name: 'CVTEC Engineer CMS',
   url: 'https://docu-collab-three.vercel.app/',
   description: 'Collaborative document management and review application.',
   // Add more as needed

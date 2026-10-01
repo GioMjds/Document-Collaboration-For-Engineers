@@ -42,9 +42,16 @@ export async function updateUserRole(input: {
   if (!parsed.success) return { ok: false, error: 'Invalid input.' };
 
   const supabase = await createClient();
+  const dbRole =
+    parsed.data.role === 'doc_controller'
+      ? 'dc'
+      : parsed.data.role === 'manager'
+        ? 'area_manager'
+        : parsed.data.role;
+
   const { error } = await supabase
     .from('profiles')
-    .update({ role: parsed.data.role })
+    .update({ role: dbRole })
     .eq('id', parsed.data.user_id);
 
   if (error) return { ok: false, error: error.message };
@@ -70,11 +77,15 @@ export async function inviteUser(input: {
   if (error || !data.user)
     return { ok: false as const, error: error?.message ?? 'Invite failed.' };
 
+  const dbRole =
+    input.role === 'doc_controller'
+      ? 'dc'
+      : input.role === 'manager'
+        ? 'area_manager'
+        : input.role;
+
   // The signup trigger created the profile as 'engineer'; set the chosen role
-  await admin
-    .from('profiles')
-    .update({ role: input.role })
-    .eq('id', data.user.id);
+  await admin.from('profiles').update({ role: dbRole }).eq('id', data.user.id);
 
   revalidatePath('/users');
   return { ok: true as const };

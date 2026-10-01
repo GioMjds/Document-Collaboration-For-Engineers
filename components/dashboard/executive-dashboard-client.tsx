@@ -322,17 +322,20 @@ export function ExecutiveDashboardClient({
   return (
     <div className="space-y-6">
       {/* Top Command Header & Role Simulation Bar */}
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-xs text-card-foreground md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
               Executive Command Deck
             </h1>
-            <Badge variant="secondary" className="text-xs">
-              Live Demo
+            <Badge
+              variant="outline"
+              className="text-xs font-mono border-[var(--site-cyan)]/40 bg-[var(--site-cyan)]/10 text-[var(--site-cyan)]"
+            >
+              CVTEC Portfolio
             </Badge>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Portfolio oversight, discipline transmittal statuses, submittal
             delays, and 14-day expiry alerts.
           </p>
@@ -341,7 +344,7 @@ export function ExecutiveDashboardClient({
         <div className="flex flex-wrap items-center gap-3">
           {/* Project Scoping Filter */}
           <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-slate-400" />
+            <Building className="h-4 w-4 text-muted-foreground" />
             <Select
               value={selectedProjectFilter}
               onValueChange={(val) => {
@@ -365,9 +368,9 @@ export function ExecutiveDashboardClient({
           </div>
 
           {/* Interactive Role Switcher for Testing */}
-          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 dark:border-slate-800 dark:bg-slate-800">
-            <UserCheck className="h-3.5 w-3.5 text-blue-600" />
-            <span className="text-[11px] font-medium text-slate-500">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-2.5 py-1">
+            <UserCheck className="h-3.5 w-3.5 text-[var(--site-cyan)]" />
+            <span className="text-[11px] font-medium text-muted-foreground">
               Role Preview:
             </span>
             <Select
@@ -404,7 +407,7 @@ export function ExecutiveDashboardClient({
       />
 
       {/* View Selector Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between border-b border-border">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -412,10 +415,10 @@ export function ExecutiveDashboardClient({
               setActiveTab('disciplines');
               setKpiFilter('all');
             }}
-            className={`flex items-center gap-2 border-b-2 pb-2.5 text-sm font-semibold transition ${
+            className={`flex items-center gap-2 border-b-2 pb-2.5 text-sm font-semibold transition cursor-pointer ${
               activeTab === 'disciplines'
-                ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'border-[var(--site-cyan)] text-[var(--site-cyan)]'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             <Layers className="h-4 w-4" />
@@ -428,16 +431,16 @@ export function ExecutiveDashboardClient({
           <button
             type="button"
             onClick={() => setActiveTab('delays')}
-            className={`flex items-center gap-2 border-b-2 pb-2.5 text-sm font-semibold transition ${
+            className={`flex items-center gap-2 border-b-2 pb-2.5 text-sm font-semibold transition cursor-pointer ${
               activeTab === 'delays'
-                ? 'border-rose-600 text-rose-600 dark:border-rose-400 dark:text-rose-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'border-destructive text-destructive'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            <AlertTriangle className="h-4 w-4 text-rose-500" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
             Pending Delays & Expiries
             {(totalDelays > 0 || expiringNocs.length > 0) && (
-              <Badge className="bg-rose-500 text-white text-xs font-mono ml-1">
+              <Badge className="bg-destructive text-destructive-foreground text-xs font-mono ml-1">
                 {totalDelays + expiringNocs.length} Urgent
               </Badge>
             )}

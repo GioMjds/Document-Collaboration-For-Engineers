@@ -36,8 +36,8 @@ export function NocAlertBanner({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 p-3 text-xs border rounded bg-zinc-50 border-zinc-200 dark:bg-zinc-900/60 dark:border-zinc-800">
-      <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 font-semibold uppercase tracking-wider">
+    <div className="flex flex-wrap items-center justify-between gap-2 p-3 text-xs border border-border rounded bg-card text-card-foreground shadow-xs">
+      <div className="flex items-center gap-2 text-foreground font-semibold uppercase tracking-wider">
         <AlertTriangle className="h-4 w-4 text-amber-600" />
         <span>Action required</span>
       </div>
@@ -87,8 +87,8 @@ export function NocAlertBanner({
             }
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
               activeFilter === 'pending-payment'
-                ? 'bg-zinc-800 text-white border-zinc-800'
-                : 'bg-zinc-100 text-zinc-800 border-zinc-300 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700'
+                ? 'bg-[var(--site-navy)] text-white border-[var(--site-navy)] dark:bg-[var(--site-cyan)] dark:text-[#081220] dark:border-[var(--site-cyan)]'
+                : 'bg-muted text-foreground border-border hover:bg-muted/80'
             }`}
           >
             <span>{pendingPaymentCount} Fee Payment Due</span>

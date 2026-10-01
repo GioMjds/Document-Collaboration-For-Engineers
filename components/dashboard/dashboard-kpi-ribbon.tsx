@@ -1,6 +1,7 @@
 'use client';
 
 import { Building2, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DashboardKpiRibbonProps {
   totalProjects: number;
@@ -36,30 +37,31 @@ export function DashboardKpiRibbon({
       <button
         type="button"
         onClick={() => onSelectFilter?.('all')}
-        className={`flex flex-col justify-between rounded-lg border p-4 text-left transition ${
+        className={cn(
+          'flex flex-col justify-between rounded-lg border p-4 text-left transition-all cursor-pointer',
           activeFilter === 'all'
-            ? 'border-blue-500 bg-blue-50/40 dark:border-blue-700 dark:bg-blue-950/30'
-            : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900'
-        }`}
+            ? 'border-[var(--site-cyan)] bg-[var(--site-cyan)]/10 text-foreground shadow-xs'
+            : 'border-border bg-card text-card-foreground hover:border-border/80 hover:bg-muted/40',
+        )}
       >
-        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-muted-foreground">
           <span className="text-xs font-semibold uppercase tracking-wider">
             Active Projects
           </span>
-          <Building2 className="h-4 w-4 text-slate-400" />
+          <Building2 className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="mt-2">
-          <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <span className="text-2xl font-bold text-foreground">
             {totalProjects}
           </span>
-          <span className="ml-1 text-xs text-slate-500">Portfolio</span>
+          <span className="ml-1 text-xs text-muted-foreground">Portfolio</span>
         </div>
         {stageBreakdownText ? (
-          <span className="mt-1 font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate">
+          <span className="mt-1 font-mono text-[11px] text-muted-foreground truncate">
             {stageBreakdownText}
           </span>
         ) : (
-          <span className="mt-1 text-[11px] text-slate-400">
+          <span className="mt-1 text-[11px] text-muted-foreground">
             Dubai Jurisdiction
           </span>
         )}
@@ -69,25 +71,26 @@ export function DashboardKpiRibbon({
       <button
         type="button"
         onClick={() => onSelectFilter?.('delayed')}
-        className={`flex flex-col justify-between rounded-lg border p-4 text-left transition ${
+        className={cn(
+          'flex flex-col justify-between rounded-lg border p-4 text-left transition-all cursor-pointer',
           activeFilter === 'delayed'
-            ? 'border-rose-500 bg-rose-50/40 dark:border-rose-700 dark:bg-rose-950/30'
-            : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900'
-        }`}
+            ? 'border-destructive bg-destructive/10 text-foreground shadow-xs'
+            : 'border-border bg-card text-card-foreground hover:border-border/80 hover:bg-muted/40',
+        )}
       >
-        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-          <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+        <div className="flex items-center justify-between text-muted-foreground">
+          <span className="text-xs font-semibold uppercase tracking-wider text-destructive">
             Pending Delays
           </span>
-          <AlertTriangle className="h-4 w-4 text-rose-500" />
+          <AlertTriangle className="h-4 w-4 text-destructive" />
         </div>
         <div className="mt-2">
-          <span className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+          <span className="text-2xl font-bold text-destructive">
             {delayedCount}
           </span>
-          <span className="ml-1 text-xs text-slate-500">Submittals</span>
+          <span className="ml-1 text-xs text-muted-foreground">Submittals</span>
         </div>
-        <span className="mt-1 text-[11px] text-slate-400">
+        <span className="mt-1 text-[11px] text-muted-foreground">
           Avg {avgDelayDays} days delayed past plan
         </span>
       </button>
@@ -96,13 +99,14 @@ export function DashboardKpiRibbon({
       <button
         type="button"
         onClick={() => onSelectFilter?.('expiring')}
-        className={`flex flex-col justify-between rounded-lg border p-4 text-left transition ${
+        className={cn(
+          'flex flex-col justify-between rounded-lg border p-4 text-left transition-all cursor-pointer',
           activeFilter === 'expiring'
-            ? 'border-amber-500 bg-amber-50/40 dark:border-amber-700 dark:bg-amber-950/30'
-            : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900'
-        }`}
+            ? 'border-amber-500 bg-amber-500/10 text-foreground shadow-xs'
+            : 'border-border bg-card text-card-foreground hover:border-border/80 hover:bg-muted/40',
+        )}
       >
-        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-muted-foreground">
           <span className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
             14-Day Expiries
           </span>
@@ -112,28 +116,28 @@ export function DashboardKpiRibbon({
           <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
             {expiringCount}
           </span>
-          <span className="ml-1 text-xs text-slate-500">Urgent</span>
+          <span className="ml-1 text-xs text-muted-foreground">Urgent</span>
         </div>
-        <span className="mt-1 text-[11px] text-slate-400">
+        <span className="mt-1 text-[11px] text-muted-foreground">
           Requires renewal before lapse
         </span>
       </button>
 
       {/* Authority Clearance Rate */}
-      <div className="flex flex-col justify-between rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+      <div className="flex flex-col justify-between rounded-lg border border-border bg-card p-4 text-left text-card-foreground">
+        <div className="flex items-center justify-between text-muted-foreground">
           <span className="text-xs font-semibold uppercase tracking-wider">
             Authority Clearance
           </span>
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div className="mt-2">
           <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
             {clearanceRate}%
           </span>
-          <span className="ml-1 text-xs text-slate-500">Approved</span>
+          <span className="ml-1 text-xs text-muted-foreground">Approved</span>
         </div>
-        <span className="mt-1 text-[11px] text-slate-400">
+        <span className="mt-1 text-[11px] text-muted-foreground">
           NOC compliance rate
         </span>
       </div>

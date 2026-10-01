@@ -1,18 +1,16 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { requireUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { AppHeader } from '@/components/layout/app-header';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Engineer Document Collaboration',
-    template: '%s | Engineer Document Collaboration',
+    default: 'CVTEC EDMS | Engineering Document Management',
+    template: '%s | CVTEC EDMS',
   },
   description:
-    'A platform for managing and collaborating on engineering documents',
+    'High-density engineering document management, authority NOC compliance, and workflow tracking for CVTEC Consulting Engineers',
 };
 
 async function signOut() {
@@ -48,38 +46,22 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
   } satisfies Record<string, string>;
 
   return (
-    <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b px-4 py-3">
-        <nav className="flex items-center gap-4 text-sm">
-          <Link
-            href="/"
-            className="font-semibold text-slate-900 dark:text-slate-100"
-          >
-            Dashboard
-          </Link>
-          <Link href="/noc-tracker" className="font-medium">
-            NOC Tracker
-          </Link>
-          <Link href="/documents" className="font-medium">
-            Documents
-          </Link>
-          {canManageUsers && <Link href="/users">Users</Link>}
-          {canArchive && <Link href="/archive">Archive</Link>}
-          {canReview && <Link href="/review">Review queue</Link>}
-        </nav>
-        <div className="flex items-center gap-3">
-          <span className="text-sm">{user.full_name || user.email}</span>
-          <Badge variant="secondary">
-            {roleLabelMap[user.role] ?? user.role.replace('_', ' ')}
-          </Badge>
-          <form action={signOut}>
-            <Button variant="outline" size="sm" type="submit">
-              Sign out
-            </Button>
-          </form>
-        </div>
-      </header>
-      <main className="mx-auto max-w-7xl p-4">{children}</main>
+    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
+      <AppHeader
+        user={{
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role,
+        }}
+        canReview={canReview}
+        canManageUsers={canManageUsers}
+        canArchive={canArchive}
+        roleLabel={roleLabelMap[user.role] ?? user.role.replace('_', ' ')}
+        onSignOut={signOut}
+      />
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8 py-6">
+        {children}
+      </main>
     </div>
   );
 }

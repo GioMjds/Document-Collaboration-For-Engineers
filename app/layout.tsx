@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans, Manrope } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
 import { RegisterServiceWorker } from '@/components/pwa/register-service-worker';
 import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
@@ -65,9 +66,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           'font-sans',
         )}
       >
-        {children}
-        <Toaster closeButton richColors position="top-right" />
-        <RegisterServiceWorker />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster closeButton richColors position="top-right" />
+          <RegisterServiceWorker />
+        </ThemeProvider>
       </body>
     </html>
   );

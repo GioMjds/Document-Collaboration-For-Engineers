@@ -9,10 +9,12 @@ const styles = {
 } satisfies Record<string, string>;
 
 export function StatusBadge({ status }: { status: string }) {
+  const key = status.toLowerCase() as keyof typeof styles;
+  const styleClass = styles[key] || styles.draft;
   return (
     <Badge
       variant="outline"
-      className={`border-transparent capitalize ${styles}`}
+      className={`border-transparent capitalize ${styleClass}`}
     >
       {status}
     </Badge>

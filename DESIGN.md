@@ -2,17 +2,20 @@
 name: Engineering Document Control & Authority NOC Tracker
 description: High-density engineering document management, authority NOC compliance, and workflow tracking for Dubai consultancies
 colors:
-  primary: '#18181b'
-  primary-foreground: '#fafafa'
-  neutral-bg: '#ffffff'
-  neutral-surface: '#f4f4f5'
-  neutral-border: '#e4e4e7'
-  ink-primary: '#09090b'
-  ink-muted: '#71717a'
-  status-success: '#166534'
-  status-warning: '#9a3412'
-  status-danger: '#991b1b'
-  status-info: '#1e40af'
+  primary: '#152a44'
+  primary-foreground: '#ffffff'
+  brand-cyan: '#02a9d3'
+  brand-cyan-hover: '#0194b8'
+  brand-navy-deep: '#0e1c30'
+  neutral-bg: '#f4f6f8'
+  neutral-surface: '#ffffff'
+  neutral-border: '#e2e6ec'
+  ink-primary: '#152a44'
+  ink-muted: '#6b7280'
+  status-success: '#15803d'
+  status-warning: '#b45309'
+  status-danger: '#b91c1c'
+  status-info: '#0284c7'
 typography:
   display:
     fontFamily: "var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -91,29 +94,33 @@ The interface rejects consumer SaaS marketing tropes: no bloated white space, no
 
 ## 2. Colors
 
-The color palette is strictly restrained: a neutral monochrome scaffolding punctuated by surgical semantic indicators for authority statuses and compliance deadlines.
+The color palette directly incorporates the official **CVTEC Consulting Engineers** brand identity extracted from `cvtec.ae`, paired with structured neutral scaffolding and surgical semantic status indicators.
 
-### Primary
+### CVTEC Brand Tokens
 
-- **Command Slate** (`#18181b` / `oklch(0.205 0 0)`): Primary action buttons, prominent header titles, and active navigation indicators. Used deliberately on less than 10% of the screen area to anchor user focus.
+- **CVTEC Corporate Navy** (`#152a44`): Primary corporate color, main header titles, card header borders, and primary button fills in light mode.
+- **Deep Midnight Navy** (`#0e1c30`): Dark mode card and drawer surfaces, technical framing, and top masthead backdrops.
+- **Signature Cyan** (`#02a9d3`): Key interactive accent, active navigation indicator pills, focus rings, and primary action fills in dark mode.
+- **Cyan Hover / Active** (`#0194b8`): Interactive hover states for cyan buttons, tabs, and links.
+- **Charcoal Neutral** (`#2d3138`): Technical deep neutral framing and high-contrast structural accents.
 
-### Secondary
+### Scaffolding & Canvas
 
-- **Surface Layer** (`#f4f4f5` / `oklch(0.97 0 0)`): Sidebar backdrops, table header rows, and secondary action button fills.
-
-### Neutral
-
-- **Base Canvas** (`#ffffff` / `oklch(1 0 0)`): Main content workspace, card bodies, and active form field backgrounds.
-- **Hairline Border** (`#e4e4e7` / `oklch(0.922 0 0)`): Structural dividers, table cell borders, and card outlines.
-- **Ink Primary** (`#09090b` / `oklch(0.145 0 0)`): High-legibility text for titles, data values, and active form entries.
-- **Ink Muted** (`#71717a` / `oklch(0.556 0 0)`): Secondary labels, timestamp strings, table column captions, and helper annotations.
+- **Base Canvas (Light)** (`#f4f6f8`): High-density engineering application canvas.
+- **Base Canvas (Dark)** (`#0a1424`): Deep Midnight engineering workspace.
+- **Surface / Card (Light)** (`#ffffff`): Foreground data cards, table backgrounds, and modal dialogues.
+- **Surface / Card (Dark)** (`#0e1c30`): Elevated dark mode panels.
+- **Hairline Border (Light)** (`#e2e6ec`): 1px structural data dividers and grid lines.
+- **Hairline Border (Dark)** (`#1f3452`): 1px structural midnight dividers.
+- **Ink Primary** (`#152a44` Light / `#f4f6f8` Dark): High-legibility technical text.
+- **Ink Muted** (`#6b7280` Light / `#94a3b8` Dark): Secondary labels, timestamps, and column captions.
 
 ### Semantic Status Colors
 
-- **Approved / Success** (`#166534` text on `#dcfce7` bg): Authority approvals and completed sign-offs.
-- **Pending / Warning** (`#9a3412` text on `#ffedd5` bg): Pending reviews, upcoming submission deadlines, and payment pending states.
-- **Expired / Danger** (`#991b1b` text on `#fee2e2` bg): Rejections requiring resubmission, lapsed permits, and blocking dependencies.
-- **Information / Stage** (`#1e40af` text on `#dbeafe` bg): Active review stages and specialist submittal notices.
+- **Approved / Success** (`#15803d` / `#22c55e` in Dark): Authority approvals and completed sign-offs.
+- **Pending / Warning** (`#b45309` / `#f59e0b` in Dark): Pending reviews, upcoming submission deadlines, and payment pending states.
+- **Expired / Danger** (`#b91c1c` / `#f87171` in Dark): Rejections requiring resubmission, lapsed permits, and blocking dependencies.
+- **Information / Stage** (`#0284c7` / `#38bdf8` in Dark): Active review stages and specialist submittal notices.
 
 ### Named Rules
 

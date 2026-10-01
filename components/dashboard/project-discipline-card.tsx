@@ -76,13 +76,13 @@ export function ProjectDisciplineCard({
   ).length;
 
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-xs transition hover:border-[var(--site-cyan)]/40 text-card-foreground">
       <div className="space-y-4">
         {/* Project Header */}
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold text-blue-600 dark:text-blue-400">
+              <span className="font-mono text-sm font-bold text-[var(--site-cyan)]">
                 #{project.code}
               </span>
               <Badge variant="outline" className="text-xs font-medium">
@@ -92,13 +92,13 @@ export function ProjectDisciplineCard({
                 {project.contractType}
               </Badge>
             </div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-semibold text-foreground">
               {project.name}
             </h3>
-            <p className="flex items-center gap-1 text-xs text-slate-500">
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
               {project.location} • Stage:{' '}
-              <span className="font-medium text-slate-700 dark:text-slate-300">
+              <span className="font-medium text-foreground">
                 {project.currentStage}
               </span>
             </p>
@@ -106,9 +106,9 @@ export function ProjectDisciplineCard({
 
           <Link href={`/noc-tracker?project=${project.code}`}>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <FileCheck2 className="h-3.5 w-3.5 text-blue-600" />
+              <FileCheck2 className="h-3.5 w-3.5 text-[var(--site-cyan)]" />
               NOC Matrix
-              <ArrowRight className="h-3 w-3 text-slate-400" />
+              <ArrowRight className="h-3 w-3 text-muted-foreground" />
             </Button>
           </Link>
         </div>
@@ -125,7 +125,7 @@ export function ProjectDisciplineCard({
 
         {/* Section 5: Current Status of Disciplines */}
         <div className="space-y-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Discipline Progress (Section 5)
           </span>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -170,7 +170,7 @@ export function ProjectDisciplineCard({
         </div>
 
         {/* Section 5: Authorities Stages */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-2 border-t border-border">
           <AuthoritiesStageRow
             designStage={statusRecord.authorities.designStage}
             constructionStage={statusRecord.authorities.constructionStage}
@@ -184,10 +184,10 @@ export function ProjectDisciplineCard({
         </div>
 
         {/* Section 5: Third-Party Specialists */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Paperclip className="h-3.5 w-3.5 text-slate-400" />
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-foreground">
               Specialist Studies:
             </span>
             <div className="flex items-center gap-1.5">
@@ -211,7 +211,7 @@ export function ProjectDisciplineCard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs text-blue-600 hover:text-blue-700"
+            className="h-7 text-xs text-[var(--site-cyan)] hover:text-[var(--site-cyan-hover)] hover:bg-[var(--site-cyan)]/10"
             onClick={() => setIsSpecialistDrawerOpen(true)}
           >
             Manage Studies & Files

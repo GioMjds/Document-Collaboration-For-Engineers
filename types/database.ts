@@ -107,7 +107,9 @@ export type Database = {
       noc_matrix_items: {
         Row: {
           active: boolean
+          blocking_sequence_no: number | null
           created_at: string
+          default_fee: number
           description: string
           id: string
           master_authority_id: number
@@ -116,10 +118,13 @@ export type Database = {
           stage: Database["public"]["Enums"]["noc_stage"]
           submitted_by: Database["public"]["Enums"]["noc_submitter"]
           updated_at: string
+          validity_days: number
         }
         Insert: {
           active?: boolean
+          blocking_sequence_no?: number | null
           created_at?: string
+          default_fee?: number
           description: string
           id?: string
           master_authority_id: number
@@ -128,10 +133,13 @@ export type Database = {
           stage: Database["public"]["Enums"]["noc_stage"]
           submitted_by?: Database["public"]["Enums"]["noc_submitter"]
           updated_at?: string
+          validity_days?: number
         }
         Update: {
           active?: boolean
+          blocking_sequence_no?: number | null
           created_at?: string
+          default_fee?: number
           description?: string
           id?: string
           master_authority_id?: number
@@ -140,6 +148,7 @@ export type Database = {
           stage?: Database["public"]["Enums"]["noc_stage"]
           submitted_by?: Database["public"]["Enums"]["noc_submitter"]
           updated_at?: string
+          validity_days?: number
         }
         Relationships: [
           {
@@ -154,6 +163,150 @@ export type Database = {
             columns: ["reviewing_authority_id"]
             isOneToOne: false
             referencedRelation: "reviewing_authorities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      noc_matrix_requirements: {
+        Row: {
+          created_at: string
+          id: string
+          mandatory: boolean
+          matrix_item_id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mandatory?: boolean
+          matrix_item_id: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mandatory?: boolean
+          matrix_item_id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "noc_matrix_requirements_matrix_item_id_fkey"
+            columns: ["matrix_item_id"]
+            isOneToOne: false
+            referencedRelation: "noc_matrix_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      noc_matrix_revisions: {
+        Row: {
+          action: string
+          change_summary: string
+          changed_by: string
+          created_at: string
+          id: string
+          master_authority_id: number
+          matrix_item_id: string | null
+          new_data: Json | null
+          previous_data: Json | null
+          propagated_nocs_count: number
+          propagated_projects_count: number
+        }
+        Insert: {
+          action: string
+          change_summary: string
+          changed_by: string
+          created_at?: string
+          id?: string
+          master_authority_id: number
+          matrix_item_id?: string | null
+          new_data?: Json | null
+          previous_data?: Json | null
+          propagated_nocs_count?: number
+          propagated_projects_count?: number
+        }
+        Update: {
+          action?: string
+          change_summary?: string
+          changed_by?: string
+          created_at?: string
+          id?: string
+          master_authority_id?: number
+          matrix_item_id?: string | null
+          new_data?: Json | null
+          previous_data?: Json | null
+          propagated_nocs_count?: number
+          propagated_projects_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "noc_matrix_revisions_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "noc_matrix_revisions_master_authority_id_fkey"
+            columns: ["master_authority_id"]
+            isOneToOne: false
+            referencedRelation: "master_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "noc_matrix_revisions_matrix_item_id_fkey"
+            columns: ["matrix_item_id"]
+            isOneToOne: false
+            referencedRelation: "noc_matrix_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      noc_resubmission_history: {
+        Row: {
+          id: string
+          project_noc_id: string
+          rejection_date: string
+          rejection_reason: string
+          resubmission_date: string
+          resubmitted_by: string
+          revision: string
+        }
+        Insert: {
+          id?: string
+          project_noc_id: string
+          rejection_date: string
+          rejection_reason: string
+          resubmission_date?: string
+          resubmitted_by: string
+          revision: string
+        }
+        Update: {
+          id?: string
+          project_noc_id?: string
+          rejection_date?: string
+          rejection_reason?: string
+          resubmission_date?: string
+          resubmitted_by?: string
+          revision?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "noc_resubmission_history_project_noc_id_fkey"
+            columns: ["project_noc_id"]
+            isOneToOne: false
+            referencedRelation: "project_nocs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "noc_resubmission_history_resubmitted_by_fkey"
+            columns: ["resubmitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -254,17 +407,71 @@ export type Database = {
           },
         ]
       }
+      project_noc_requirements: {
+        Row: {
+          file_url: string | null
+          id: string
+          is_satisfied: boolean
+          project_noc_id: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          file_url?: string | null
+          id?: string
+          is_satisfied?: boolean
+          project_noc_id: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          file_url?: string | null
+          id?: string
+          is_satisfied?: boolean
+          project_noc_id?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_noc_requirements_project_noc_id_fkey"
+            columns: ["project_noc_id"]
+            isOneToOne: false
+            referencedRelation: "project_nocs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_noc_requirements_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_nocs: {
         Row: {
           apply_date: string | null
+          blocking_sequence_no: number | null
           created_at: string
+          current_revision: string
           description: string
           expiry_date: string | null
           file_url: string | null
           id: string
+          is_paid: boolean
           matrix_item_id: string | null
+          overridden_at: string | null
+          overridden_by: string | null
+          override_reason: string | null
+          payer_type: string | null
+          payment_fee: number
           plan_date: string | null
           project_id: string
+          receipt_file_url: string | null
           receive_date: string | null
           reference_no: string | null
           remarks: string | null
@@ -278,14 +485,23 @@ export type Database = {
         }
         Insert: {
           apply_date?: string | null
+          blocking_sequence_no?: number | null
           created_at?: string
+          current_revision?: string
           description: string
           expiry_date?: string | null
           file_url?: string | null
           id?: string
+          is_paid?: boolean
           matrix_item_id?: string | null
+          overridden_at?: string | null
+          overridden_by?: string | null
+          override_reason?: string | null
+          payer_type?: string | null
+          payment_fee?: number
           plan_date?: string | null
           project_id: string
+          receipt_file_url?: string | null
           receive_date?: string | null
           reference_no?: string | null
           remarks?: string | null
@@ -299,14 +515,23 @@ export type Database = {
         }
         Update: {
           apply_date?: string | null
+          blocking_sequence_no?: number | null
           created_at?: string
+          current_revision?: string
           description?: string
           expiry_date?: string | null
           file_url?: string | null
           id?: string
+          is_paid?: boolean
           matrix_item_id?: string | null
+          overridden_at?: string | null
+          overridden_by?: string | null
+          override_reason?: string | null
+          payer_type?: string | null
+          payment_fee?: number
           plan_date?: string | null
           project_id?: string
+          receipt_file_url?: string | null
           receive_date?: string | null
           reference_no?: string | null
           remarks?: string | null
@@ -324,6 +549,13 @@ export type Database = {
             columns: ["matrix_item_id"]
             isOneToOne: false
             referencedRelation: "noc_matrix_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_nocs_overridden_by_fkey"
+            columns: ["overridden_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -563,6 +795,21 @@ export type Database = {
     }
     Functions: {
       next_project_code: { Args: never; Returns: string }
+      propagate_matrix_item_change: {
+        Args: {
+          p_blocking_seq: number | null
+          p_caller_id: string
+          p_change_summary: string
+          p_default_fee: number
+          p_description: string
+          p_matrix_item_id: string
+          p_reviewing_authority_id: number
+          p_stage: Database["public"]["Enums"]["noc_stage"]
+          p_submitted_by: Database["public"]["Enums"]["noc_submitter"]
+          p_validity_days: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role:

@@ -97,6 +97,57 @@ export interface NocRequirement {
   fileName?: string;
 }
 
+export interface NocResubmissionEntry {
+  id: string;
+  projectNocId: string;
+  revision: string;
+  rejectionReason: string;
+  rejectionDate: string;
+  resubmissionDate: string;
+  resubmittedBy: string;
+}
+
+export interface NocMatrixRequirement {
+  id: string;
+  matrixItemId: string;
+  title: string;
+  mandatory: boolean;
+  sortOrder: number;
+}
+
+export interface NocMatrixItem {
+  id: string;
+  masterAuthorityId: number;
+  sequenceNo: number;
+  stage: NocStage;
+  reviewingAuthority: ReviewingAuthority;
+  description: string;
+  submittedBy: SubmittedBy;
+  blockingSequenceNo: number | null;
+  validityDays: number;
+  defaultFee: number;
+  active: boolean;
+  requirements: NocMatrixRequirement[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface NocMatrixRevision {
+  id: string;
+  masterAuthorityId: number;
+  matrixItemId?: string | null;
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'REORDER';
+  changedBy: string;
+  changedByName?: string;
+  changedByRole?: string;
+  changeSummary: string;
+  previousData?: Record<string, unknown> | null;
+  newData?: Record<string, unknown> | null;
+  propagatedProjectsCount: number;
+  propagatedNocsCount: number;
+  createdAt: string;
+}
+
 export interface ProjectNocItem {
   id: string;
   projectCode: string;
@@ -109,6 +160,8 @@ export interface ProjectNocItem {
   status: NocStatus;
   paymentFee: number;
   isPaid: boolean;
+  payerType?: NocPayerType;
+  receiptFileUrl?: string;
   planDate: string;
   applyDate: string | null;
   issuanceDate: string | null;
@@ -118,6 +171,10 @@ export interface ProjectNocItem {
   requirements: NocRequirement[];
   rejectionReason?: string;
   revision: string;
+  resubmissionHistory?: NocResubmissionEntry[];
+  overrideReason?: string;
+  overriddenBy?: string;
+  overriddenAt?: string;
   updatedAt: string;
 }
 
@@ -201,3 +258,5 @@ export interface SubmittalDelayItem {
   daysDelayed: number;
   delayType: 'Unsubmitted Delay' | 'Pending Authority Review';
 }
+
+export type NocPayerType = 'client' | 'contractor' | 'consultant_advance';
